@@ -1,440 +1,59 @@
-# Compila tu launcher de TV como APK usando GitHub (gratis, sin PC).
-# Cada vez que cambias index.html o este archivo, GitHub genera un APK nuevo.
-name: Compilar launcher
+name: Build APK
 
 on:
   push:
-    branches: [main, master]
-  workflow_dispatch:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:   # permite ejecutarlo a mano desde la pestaña Actions
 
-permissions:
-  contents: write
+env:
+  # El launcher nuevo: súbelo a la raíz del repo con este nombre
+  HTML_SOURCE: index.html
+  # Donde la app lo carga (file:///android_asset/index.html). Cámbialo si tu proyecto usa otra ruta
+  HTML_TARGET: app/src/main/assets/index.html
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Poner el launcher nuevo dentro de la app
+        run: |
+          test -f "$HTML_SOURCE" || { echo "No encuentro $HTML_SOURCE en la raíz del repo"; exit 1; }
+          mkdir -p "$(dirname "$HTML_TARGET")"
+          if [ "$HTML_SOURCE" != "$HTML_TARGET" ]; then cp "$HTML_SOURCE" "$HTML_TARGET"; fi
+
+      - name: Revisar que el JavaScript del launcher no tenga errores
+        run: |
+          node -e "
+          const s = require('fs').readFileSync(process.env.HTML_TARGET, 'utf8');
+          const m = s.match(/<script>([\s\S]*)<\/script>/);
+          if (!m) { console.error('No encontré el <script> del launcher'); process.exit(1); }
+          try { new Function(m[1]); console.log('JavaScript OK'); }
+          catch (e) { console.error('Error de sintaxis:', e.message); process.exit(1); }
+          "
+
+      - name: Instalar Java 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: 17
 
-      - uses: gradle/actions/setup-gradle@v4
+      - name: Preparar Gradle (con caché)
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Dar permisos a gradlew
+        run: chmod +x ./gradlew
+
+      - name: Compilar APK debug
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Subir el APK
+        uses: actions/upload-artifact@v4
         with:
-          gradle-version: '8.7'
-
-      - name: Generar proyecto Android
-        run: |
-          set -e
-          mkdir -p android/app/src/main/assets android/app/src/main/java/com/tvlauncher
-          cat > android/settings.gradle <<'EOF_FILE'
-          pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
-          rootProject.name = "TVLauncher"
-          include ':app'
-          EOF_FILE
-          cat > android/build.gradle <<'EOF_FILE'
-          plugins {
-              id 'com.android.application' version '8.5.2' apply false
-              id 'org.jetbrains.kotlin.android' version '1.9.24' apply false
-          }
-          EOF_FILE
-          cat > android/gradle.properties <<'EOF_FILE'
-          org.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8
-          android.useAndroidX=false
-          EOF_FILE
-          cat > android/app/build.gradle <<'EOF_FILE'
-          plugins {
-              id 'com.android.application'
-              id 'org.jetbrains.kotlin.android'
-          }
-
-          android {
-              namespace 'com.tvlauncher'
-              compileSdk 34
-
-              defaultConfig {
-                  applicationId 'com.tvlauncher'
-                  minSdk 21
-                  targetSdk 34
-                  versionCode 1
-                  versionName '1.0'
-              }
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-              kotlinOptions {
-                  jvmTarget = '17'
-              }
-          }
-          EOF_FILE
-          cat > android/app/src/main/AndroidManifest.xml <<'EOF_FILE'
-          <?xml version="1.0" encoding="utf-8"?>
-          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-              <uses-feature android:name="android.software.leanback" android:required="false" />
-              <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
-
-              <uses-permission android:name="android.permission.INTERNET" />
-              <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-              <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
-
-              <application
-                  android:label="TV Launcher"
-                  android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen"
-                  android:hardwareAccelerated="true">
-
-                  <activity
-                      android:name=".MainActivity"
-                      android:exported="true"
-                      android:launchMode="singleTask"
-                      android:stateNotNeeded="true"
-                      android:resumeWhilePausing="true"
-                      android:configChanges="orientation|screenSize|keyboardHidden|keyboard|navigation|uiMode|screenLayout|smallestScreenSize|density">
-                      <intent-filter>
-                          <action android:name="android.intent.action.MAIN" />
-                          <category android:name="android.intent.category.HOME" />
-                          <category android:name="android.intent.category.DEFAULT" />
-                      </intent-filter>
-                      <intent-filter>
-                          <action android:name="android.intent.action.MAIN" />
-                          <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-                          <category android:name="android.intent.category.LAUNCHER" />
-                      </intent-filter>
-                  </activity>
-
-                  <service
-                      android:name=".MediaListener"
-                      android:exported="true"
-                      android:label="TV Launcher música"
-                      android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-                      <intent-filter>
-                          <action android:name="android.service.notification.NotificationListenerService" />
-                      </intent-filter>
-                  </service>
-              </application>
-          </manifest>
-          EOF_FILE
-          cat > android/app/src/main/java/com/tvlauncher/MainActivity.kt <<'EOF_FILE'
-          package com.tvlauncher
-
-          import android.Manifest
-          import android.app.Activity
-          import android.app.ActivityManager
-          import android.content.ComponentName
-          import android.content.Context
-          import android.content.Intent
-          import android.content.pm.PackageManager
-          import android.graphics.Bitmap
-          import android.graphics.Canvas
-          import android.graphics.Color
-          import android.graphics.drawable.Drawable
-          import android.media.MediaMetadata
-          import android.media.session.MediaController
-          import android.media.session.MediaSessionManager
-          import android.media.session.PlaybackState
-          import android.net.ConnectivityManager
-          import android.net.wifi.WifiManager
-          import android.os.Build
-          import android.os.Bundle
-          import android.os.Environment
-          import android.os.StatFs
-          import android.os.SystemClock
-          import android.provider.Settings
-          import android.util.Base64
-          import android.webkit.JavascriptInterface
-          import android.webkit.WebChromeClient
-          import android.webkit.WebView
-          import android.webkit.WebViewClient
-          import org.json.JSONArray
-          import org.json.JSONObject
-          import java.io.ByteArrayOutputStream
-          import java.util.Locale
-
-          class MainActivity : Activity() {
-
-              private lateinit var web: WebView
-
-              override fun onCreate(savedInstanceState: Bundle?) {
-                  super.onCreate(savedInstanceState)
-                  web = WebView(this)
-                  web.setBackgroundColor(Color.BLACK)
-                  web.settings.javaScriptEnabled = true
-                  web.settings.domStorageEnabled = true
-                  web.settings.mediaPlaybackRequiresUserGesture = false
-                  web.webViewClient = WebViewClient()
-                  web.webChromeClient = WebChromeClient()
-                  web.addJavascriptInterface(Bridge(), "Android")
-                  setContentView(web)
-                  web.requestFocus()
-                  web.loadUrl("file:///android_asset/index.html")
-
-                  // Para poder leer el nombre del Wi-Fi
-                  if (Build.VERSION.SDK_INT >= 23 &&
-                      checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                  ) {
-                      requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
-                  }
-              }
-
-              override fun onNewIntent(intent: Intent?) {
-                  super.onNewIntent(intent)
-                  // Se pulsó el botón Home estando ya dentro del launcher
-                  web.evaluateJavascript("window.onHome&&window.onHome()", null)
-              }
-
-              @Deprecated("Deprecated in Java")
-              override fun onBackPressed() {
-                  web.evaluateJavascript("window.onBack&&window.onBack()", null)
-              }
-
-              // ---------- ayudas ----------
-
-              private fun hasNotifAccess(): Boolean {
-                  val s = Settings.Secure.getString(contentResolver, "enabled_notification_listeners") ?: return false
-                  return s.contains(packageName)
-              }
-
-              private fun controller(): MediaController? {
-                  return try {
-                      val msm = getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
-                      val list = msm.getActiveSessions(ComponentName(this, MediaListener::class.java))
-                      list.firstOrNull { it.playbackState?.state == PlaybackState.STATE_PLAYING } ?: list.firstOrNull()
-                  } catch (e: Exception) {
-                      null
-                  }
-              }
-
-              private fun toDataUrl(bm: Bitmap, png: Boolean): String {
-                  val bos = ByteArrayOutputStream()
-                  if (png) bm.compress(Bitmap.CompressFormat.PNG, 100, bos)
-                  else bm.compress(Bitmap.CompressFormat.JPEG, 85, bos)
-                  val mime = if (png) "image/png" else "image/jpeg"
-                  return "data:" + mime + ";base64," + Base64.encodeToString(bos.toByteArray(), Base64.NO_WRAP)
-              }
-
-              private fun startSafe(i: Intent) {
-                  i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                  runOnUiThread {
-                      try {
-                          startActivity(i)
-                      } catch (e: Exception) {
-                      }
-                  }
-              }
-
-              // ---------- puente JavaScript <-> Android ----------
-
-              inner class Bridge {
-
-                  @JavascriptInterface
-                  fun apps(): String {
-                      val pm = packageManager
-                      val out = LinkedHashMap<String, String>()
-                      for (cat in listOf(Intent.CATEGORY_LEANBACK_LAUNCHER, Intent.CATEGORY_LAUNCHER)) {
-                          val i = Intent(Intent.ACTION_MAIN).addCategory(cat)
-                          for (ri in pm.queryIntentActivities(i, 0)) {
-                              val p = ri.activityInfo.packageName
-                              if (p == packageName) continue
-                              if (!out.containsKey(p)) out[p] = ri.loadLabel(pm).toString()
-                          }
-                      }
-                      val arr = JSONArray()
-                      for ((p, l) in out) {
-                          arr.put(JSONObject().put("pkg", p).put("label", l))
-                      }
-                      return arr.toString()
-                  }
-
-                  @JavascriptInterface
-                  fun icon(pkg: String): String {
-                      return try {
-                          val pm = packageManager
-                          var d: Drawable? = null
-                          try {
-                              val li = pm.getLeanbackLaunchIntentForPackage(pkg)
-                              if (li != null) d = pm.getActivityBanner(li)
-                          } catch (e: Exception) {
-                          }
-                          if (d == null) {
-                              try {
-                                  d = pm.getApplicationBanner(pkg)
-                              } catch (e: Exception) {
-                              }
-                          }
-                          val banner = d != null
-                          val drawable: Drawable = d ?: pm.getApplicationIcon(pkg)
-                          val w = if (banner) 320 else 192
-                          val h = if (banner) 180 else 192
-                          val bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-                          val c = Canvas(bm)
-                          drawable.setBounds(0, 0, w, h)
-                          drawable.draw(c)
-                          JSONObject().put("banner", banner).put("data", toDataUrl(bm, true)).toString()
-                      } catch (e: Exception) {
-                          "{}"
-                      }
-                  }
-
-                  @JavascriptInterface
-                  fun launch(pkg: String): Boolean {
-                      val pm = packageManager
-                      val i = pm.getLeanbackLaunchIntentForPackage(pkg) ?: pm.getLaunchIntentForPackage(pkg) ?: return false
-                      startSafe(i)
-                      return true
-                  }
-
-                  @JavascriptInterface
-                  fun settings(kind: String) {
-                      if (kind == "search") {
-                          val i = pkgIntent("com.google.android.katniss") ?: Intent(Intent.ACTION_ASSIST)
-                          startSafe(i)
-                          return
-                      }
-                      val action = when (kind) {
-                          "wifi" -> Settings.ACTION_WIFI_SETTINGS
-                          "sound" -> Settings.ACTION_SOUND_SETTINGS
-                          "display" -> Settings.ACTION_DISPLAY_SETTINGS
-                          "access" -> Settings.ACTION_ACCESSIBILITY_SETTINGS
-                          "notif" -> "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"
-                          else -> Settings.ACTION_SETTINGS
-                      }
-                      val i = Intent(action)
-                      if (i.resolveActivity(packageManager) != null) {
-                          startSafe(i)
-                      } else {
-                          startSafe(pkgIntent("com.android.tv.settings") ?: Intent(Settings.ACTION_SETTINGS))
-                      }
-                  }
-
-                  private fun pkgIntent(pkg: String): Intent? {
-                      val pm = packageManager
-                      return pm.getLeanbackLaunchIntentForPackage(pkg) ?: pm.getLaunchIntentForPackage(pkg)
-                  }
-
-                  @JavascriptInterface
-                  fun info(): String {
-                      val o = JSONObject()
-                      try {
-                          val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                          val mi = ActivityManager.MemoryInfo()
-                          am.getMemoryInfo(mi)
-                          o.put("ramFree", String.format(Locale.US, "%.1f", mi.availMem / 1073741824.0))
-                          val st = StatFs(Environment.getDataDirectory().path)
-                          o.put("storageFree", String.format(Locale.US, "%.1f", st.availableBytes / 1073741824.0))
-                      } catch (e: Exception) {
-                      }
-                      try {
-                          val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-                          o.put("online", cm.activeNetworkInfo?.isConnected == true)
-                          val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-                          var ssid = wm.connectionInfo?.ssid ?: ""
-                          ssid = ssid.trim('"')
-                          if (ssid == "<unknown ssid>") ssid = ""
-                          o.put("ssid", ssid)
-                      } catch (e: Exception) {
-                      }
-                      return o.toString()
-                  }
-
-                  @JavascriptInterface
-                  fun media(): String {
-                      val o = JSONObject()
-                      val access = hasNotifAccess()
-                      o.put("access", access)
-                      o.put("active", false)
-                      if (!access) return o.toString()
-                      val c = controller() ?: return o.toString()
-                      val md = c.metadata
-                      val st = c.playbackState
-                      val title = md?.getString(MediaMetadata.METADATA_KEY_TITLE) ?: ""
-                      if (title.isEmpty()) return o.toString()
-                      val artist = md?.getString(MediaMetadata.METADATA_KEY_ARTIST)
-                          ?: md?.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST) ?: ""
-                      val playing = st != null && st.state == PlaybackState.STATE_PLAYING
-                      var pos = st?.position ?: 0L
-                      if (playing && st != null) {
-                          pos += ((SystemClock.elapsedRealtime() - st.lastPositionUpdateTime) * st.playbackSpeed).toLong()
-                      }
-                      val dur = md?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0L
-                      o.put("active", true)
-                      o.put("title", title)
-                      o.put("artist", artist)
-                      o.put("playing", playing)
-                      o.put("pos", pos)
-                      o.put("dur", dur)
-                      o.put("pkg", c.packageName)
-                      o.put("artKey", title + "|" + artist)
-                      return o.toString()
-                  }
-
-                  @JavascriptInterface
-                  fun mediaArt(): String {
-                      return try {
-                          val md = controller()?.metadata ?: return ""
-                          val bm = md.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
-                              ?: md.getBitmap(MediaMetadata.METADATA_KEY_ART)
-                              ?: md.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON)
-                              ?: return ""
-                          toDataUrl(Bitmap.createScaledBitmap(bm, 300, 300, true), false)
-                      } catch (e: Exception) {
-                          ""
-                      }
-                  }
-
-                  @JavascriptInterface
-                  fun mediaCmd(cmd: String) {
-                      val c = controller() ?: return
-                      val t = c.transportControls
-                      when (cmd) {
-                          "next" -> t.skipToNext()
-                          "prev" -> t.skipToPrevious()
-                          "toggle" -> {
-                              if (c.playbackState?.state == PlaybackState.STATE_PLAYING) t.pause() else t.play()
-                          }
-                      }
-                  }
-              }
-          }
-          EOF_FILE
-          cat > android/app/src/main/java/com/tvlauncher/MediaListener.kt <<'EOF_FILE'
-          package com.tvlauncher
-
-          import android.service.notification.NotificationListenerService
-
-          // Solo existe para que Android nos deje leer qué música suena (permiso "acceso a notificaciones").
-          class MediaListener : NotificationListenerService()
-          EOF_FILE
-          cp index.html android/app/src/main/assets/index.html
-
-      - name: Compilar APK
-        working-directory: android
-        run: gradle assembleDebug --no-daemon --stacktrace
-
-      - name: Preparar APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk launcher.apk
-
-      - name: Publicar descarga
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ github.run_number }}
-          name: Launcher v${{ github.run_number }}
-          files: launcher.apk
-          make_latest: true
+          name: tv-launcher-apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
