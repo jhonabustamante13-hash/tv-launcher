@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TV Launcher</title>
+<style>
+:root{
+  --glass:rgba(255,255,255,.10);
+  --glass2:rgba(255,255,255,.16);
+  --line:rgba(255,255,255,.18);
+  --txt:#f4f6fb;
+  --dim:rgba(244,246,251,.62);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+/* 1rem = 20px en una TV de 1920px de ancho; todo escala solo */
+html{font-size:calc(100vw / 96)}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;color:var(--txt);
+  font-family:"Google Sans","Product Sans",Roboto,"Segoe UI",Arial,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;outline:none;cursor:pointer}
+svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.hide{display:none!important}
+
+/* ---------- Fondo ---------- */
+#wall{position:fixed;inset:0;overflow:hidden;transition:opacity .4s}
+#wall>*{position:absolute;inset:0}
+#stars,#scene,#drive,#aurora{display:none}
+.wp-drive #drive{display:block}
+.wp-aurora #aurora{display:block}
+.wp-stars{background:linear-gradient(180deg,#05060b 0%,#0a0f1d 55%,#101a30 100%)}
+.wp-drive{background:linear-gradient(180deg,#0c0420 0%,#2a0b52 45%,#ff2e88 70%,#ff9a3c 72%,#0a0318 72.2%)}
+.wp-aurora{background:#050a14}
+#scene svg{position:absolute;left:0;top:0;width:100%;height:100%;stroke:none}
+#glow{opacity:0;transition:opacity .5s;--gc:120,140,255;--gx:50%;pointer-events:none;
+  background:radial-gradient(130rem 90rem at var(--gx) 75%,rgba(var(--gc),.42),rgba(var(--gc),.20) 55%,rgba(var(--gc),.10) 100%),
+             linear-gradient(180deg,rgba(var(--gc),.08),rgba(var(--gc),.08))}
+#glow.on{opacity:1}
+#glow.flash{animation:flash .9s ease-out}
+@keyframes flash{0%{filter:brightness(1.7) saturate(1.3)}35%{filter:brightness(1.25)}100%{filter:none}}
+#shade{position:fixed;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,0) 22%,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%)}
+/* synthwave */
+#drive .sun{position:absolute;left:50%;top:34%;width:20rem;height:20rem;margin-left:-10rem;border-radius:50%;
+  background:linear-gradient(180deg,#ffe36b,#ff3d8f);filter:blur(.15rem)}
+#drive .grid{position:absolute;left:-50%;right:-50%;top:72%;bottom:-40%;
+  background-image:linear-gradient(rgba(255,60,200,.85) .12rem,transparent .12rem),
+                   linear-gradient(90deg,rgba(255,60,200,.85) .12rem,transparent .12rem);
+  background-size:4rem 4rem;transform:perspective(30rem) rotateX(62deg);transform-origin:top center}
+#drive .glow{position:absolute;left:0;right:0;top:60%;height:20%;background:linear-gradient(180deg,transparent,rgba(0,220,255,.25),transparent)}
+/* aurora */
+#aurora i{position:absolute;border-radius:50%;filter:blur(7rem);opacity:.75;animation:drift 18s ease-in-out infinite alternate}
+#aurora i:nth-child(1){width:46rem;height:30rem;left:-6rem;top:8rem;background:#1fd5a4}
+#aurora i:nth-child(2){width:40rem;height:34rem;right:-4rem;top:-4rem;background:#5a4bff;animation-delay:-6s}
+#aurora i:nth-child(3){width:36rem;height:26rem;left:34rem;bottom:-6rem;background:#00a6ff;animation-delay:-11s}
+@keyframes drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(4rem,-3rem,0) scale(1.18)}}
+
+/* ---------- Cabecera ---------- */
+#top{position:fixed;left:5rem;right:5rem;top:3.2rem;display:flex;align-items:center;justify-content:space-between;z-index:5}
+.glass{background:linear-gradient(135deg,rgba(255,255,255,.26) 0%,rgba(255,255,255,.07) 45%,rgba(255,255,255,.14) 100%);
+  border:.08rem solid rgba(255,255,255,.34);
+  box-shadow:inset 0 .12rem .25rem rgba(255,255,255,.55),inset 0 -.15rem .35rem rgba(255,255,255,.12),0 .8rem 2.2rem rgba(0,0,0,.28);
+  -webkit-backdrop-filter:blur(1.4rem) saturate(1.7);backdrop-filter:blur(1.4rem) saturate(1.7)}
+#clock{display:flex;align-items:center;gap:1.5rem;padding:.9rem 2rem .9rem 1.8rem;border-radius:2.6rem;text-shadow:0 .1rem .5rem rgba(0,0,0,.35)}
+#clock .ct{display:flex;flex-direction:column;line-height:1.05}
+#time{font-size:2.9rem;font-weight:600;letter-spacing:.02rem}
+#date{font-size:1.1rem;font-weight:400;color:rgba(255,255,255,.78);margin-top:.25rem}
+#left{display:flex;align-items:center;gap:1.2rem}
+#wx{display:flex;align-items:center;gap:1rem;padding:.9rem 2rem .9rem 1.6rem;border-radius:2.6rem;text-shadow:0 .1rem .5rem rgba(0,0,0,.35)}
+#wx.hide{display:none}
+#wxi{font-size:3rem;display:flex}
+#wxi svg{stroke-width:1.5}
+#wx .wt{display:flex;flex-direction:column;line-height:1.05}
+#wxt{font-size:2.2rem;font-weight:500}
+#wxc{font-size:1rem;color:rgba(255,255,255,.78);margin-top:.2rem}
+#pills{display:flex;gap:1rem}
+.pill{display:flex;align-items:center;gap:.7rem;height:3.4rem;padding:0 1.5rem;border-radius:2rem;
+  background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.07) 50%,rgba(255,255,255,.14));border:.08rem solid rgba(255,255,255,.34);
+  box-shadow:inset 0 .1rem .2rem rgba(255,255,255,.5),0 .5rem 1.4rem rgba(0,0,0,.25);-webkit-backdrop-filter:blur(1.2rem) saturate(1.6);backdrop-filter:blur(1.2rem) saturate(1.6);font-size:1.3rem;font-weight:500;
+  transition:background .15s,transform .15s,color .15s}
+.pill.round{width:3.4rem;padding:0;justify-content:center;font-size:1.6rem}
+.pill svg{font-size:1.5rem}
+
+/* ---------- Foco ---------- */
+.f:focus{background:#fff!important;color:#10131c!important;transform:scale(1.05);z-index:3}
+.f:focus svg{stroke:#10131c}
+.f:focus .fillicon{fill:#10131c}
+
+/* ---------- Música (home) ---------- */
+#np{position:fixed;left:5rem;right:5rem;bottom:24.5rem;z-index:4}
+#np .row{display:flex;gap:2rem;align-items:flex-end}
+#art{width:8.4rem;height:8.4rem;border-radius:1rem;object-fit:cover;background:var(--glass2);box-shadow:0 .5rem 1.6rem rgba(0,0,0,.45)}
+#np .meta{flex:1;min-width:0}
+#ttl{font-size:2.5rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 .1rem .8rem rgba(0,0,0,.5)}
+#art2{font-size:1.3rem;color:var(--dim);margin:.2rem 0 .9rem}
+.ctl{display:flex;gap:1rem;align-items:center}
+.cb{width:3.2rem;height:3.2rem;border-radius:50%;border:.1rem solid var(--line);background:var(--glass);display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.cb svg{stroke:none;fill:currentColor}
+.f:focus.cb svg{fill:#10131c}
+.listen{display:flex;align-items:center;gap:.7rem;height:3.4rem;padding:0 1.8rem;border-radius:2rem;background:#fff;color:#10131c;font-size:1.25rem;font-weight:500}
+.listen svg{stroke:#10131c}
+.listen:focus{box-shadow:0 0 0 .3rem rgba(255,255,255,.55)}
+#bar{display:flex;align-items:center;gap:1rem;margin-top:1.4rem;font-size:1.1rem;color:var(--dim)}
+#bar .trk{flex:1;height:.28rem;border-radius:.2rem;background:rgba(255,255,255,.25);overflow:hidden}
+#bar .trk i{display:block;height:100%;width:0;background:#fff}
+
+/* ---------- Dock de apps ---------- */
+#dock{position:fixed;left:5rem;right:5rem;bottom:5rem;height:15.4rem;border-radius:2.4rem;
+  background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.06));border:.08rem solid var(--line);
+  overflow:hidden;z-index:4}
+#row{display:flex;align-items:center;gap:1.4rem;height:100%;padding:0 1.8rem;width:max-content}
+.tile{position:relative;flex:none;width:12.5rem;height:7rem;border-radius:1.3rem;overflow:hidden;
+  background:rgba(20,24,40,.85);border:.08rem solid var(--line);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:.4rem;transition:width .22s,height .22s,transform .22s}
+.tile img{display:block}
+.tile.banner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tile.icon img{width:3.6rem;height:3.6rem;border-radius:.8rem}
+.tile .tl{font-size:1.05rem;font-weight:500;padding:0 .6rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tile.banner .tl{display:none}
+.tile.f:focus{width:19rem;height:10.7rem;transform:none;background:#fff!important;box-shadow:0 .8rem 2.4rem rgba(0,0,0,.5)}
+.tile.f:focus .tl{color:#10131c}
+.tile.allapps{width:7rem}
+.tile.allapps:focus{width:9rem}
+.tile.allapps svg{font-size:2.4rem}
+
+/* ---------- Panel de control ---------- */
+#panel{position:fixed;right:5rem;top:7.4rem;width:34rem;z-index:8;visibility:hidden;opacity:0;
+  transform:translateX(2.5rem);transition:opacity .2s,transform .2s,visibility 0s .2s}
+#panel.open{visibility:visible;opacity:1;transform:none;transition:opacity .2s,transform .2s}
+#grid{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:4.9rem;gap:.9rem}
+.card{border-radius:1.8rem;background:rgba(40,46,64,.78);border:.08rem solid var(--line);padding:1rem 1.3rem;
+  display:flex;align-items:center;gap:1rem;text-align:left;transition:background .15s,transform .15s}
+.card .ci{width:2.9rem;height:2.9rem;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex:none}
+.card .ct{min-width:0}
+.card b{display:block;font-size:1.25rem;font-weight:600}
+.card small{display:block;font-size:1.05rem;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f:focus.card small{color:#4a5060}
+.f:focus .ci{background:rgba(0,0,0,.1)}
+#pmedia{grid-row:span 2;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:1.1rem}
+#pmedia img{width:3.8rem;height:3.8rem;border-radius:.7rem;background:var(--glass2);object-fit:cover}
+#pmedia .pm-b{width:100%}
+#pmedia .pm-b b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:1.2rem}
+#prow{grid-column:span 2;display:flex;justify-content:space-between;padding:.3rem .2rem}
+.rb{width:4.7rem;height:4.7rem;border-radius:50%;background:rgba(40,46,64,.78);border:.08rem solid var(--line);display:flex;align-items:center;justify-content:center;font-size:1.8rem}
+#ram{margin:.7rem 0 0;padding:.7rem 1.4rem;border-radius:1.4rem;background:rgba(40,46,64,.78);border:.08rem solid var(--line);font-size:1.05rem;color:var(--dim);text-align:right}
+
+/* ---------- Todas las apps ---------- */
+#all{position:fixed;inset:0;z-index:9;background:rgba(5,8,16,.9);padding:6rem 5rem 3rem;visibility:hidden;opacity:0;transition:opacity .2s,visibility 0s .2s}
+#all.open{visibility:visible;opacity:1;transition:opacity .2s}
+#all h2{font-size:2rem;font-weight:600;margin-bottom:2rem}
+#apps{display:grid;grid-template-columns:repeat(8,1fr);gap:1.6rem;max-height:calc(100vh - 17rem);overflow:hidden}
+.app{display:flex;flex-direction:column;align-items:center;gap:.8rem;padding:1.3rem .6rem;border-radius:1.4rem;background:var(--glass);font-size:1.1rem;transition:transform .15s}
+.app img{width:5.4rem;height:5.4rem;border-radius:1.1rem;object-fit:cover}
+.app span{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app .ph{width:5.4rem;height:5.4rem;border-radius:1.1rem;background:var(--glass2)}
+
+/* ---------- Reloj grande ---------- */
+#big{position:fixed;inset:0;z-index:20;background:radial-gradient(circle at 50% 40%,rgba(10,16,34,.55),rgba(0,0,0,.92));display:none;align-items:center;justify-content:center;flex-direction:column}
+#big.open{display:flex}
+#bigtime{font-size:15rem;font-weight:300;letter-spacing:.2rem}
+#bigdate{font-size:2.2rem;color:var(--dim);margin-top:.5rem}
+
+#toast{position:fixed;left:50%;bottom:2rem;transform:translateX(-50%);background:rgba(0,0,0,.8);padding:.7rem 1.6rem;border-radius:1.4rem;font-size:1.1rem;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<div id="wall" class="wp-stars">
+  <div id="drive"><div class="sun"></div><div class="glow"></div><div class="grid"></div></div>
+  <div id="aurora"><i></i><i></i><i></i></div>
+  <div id="glow"></div>
+</div>
+<div id="shade"></div>
+
+<header id="top">
+  <div id="left">
+    <div id="clock" class="glass"><div class="ct"><span id="time"></span><span id="date"></span></div></div>
+    <div id="wx" class="glass hide"><span id="wxi"></span><div class="wt"><b id="wxt"></b><span id="wxc"></span></div></div>
+  </div>
+  <nav id="pills">
+    <button class="pill f" id="bStore"><span data-i="store"></span><span id="lStore"></span></button>
+    <button class="pill f" id="bWifi"><span data-i="wifi"></span><span id="ssid"></span></button>
+    <button class="pill round f" id="bPanel"><span data-i="toggle"></span></button>
+    <button class="pill round f" id="bSet"><span data-i="gear"></span></button>
+  </nav>
+</header>
+
+<section id="np" class="hide">
+  <div class="row">
+    <img id="art" alt="">
+    <div class="meta">
+      <div id="ttl"></div>
+      <div id="art2"></div>
+      <div class="ctl">
+        <button class="cb f" data-cmd="prev"><span data-i="prev"></span></button>
+        <button class="cb f" data-cmd="toggle"><span id="ppIcon"></span></button>
+        <button class="cb f" data-cmd="next"><span data-i="next"></span></button>
+        <button class="listen f" id="bListen"><span data-i="headphones"></span><span id="lListen"></span></button>
+      </div>
+    </div>
+  </div>
+  <div id="bar"><span id="pos">0:00</span><div class="trk"><i id="fill"></i></div></div>
+</section>
+
+<section id="dock"><div id="row"></div></section>
+
+<aside id="panel">
+  <div id="grid">
+    <button class="card f" id="pmedia">
+      <img id="pArt" alt="">
+      <div class="pm-b"><b id="pTitle"></b><small id="pSub"></small></div>
+    </button>
+    <button class="card f" id="cWifi"><span class="ci" data-i="wifi"></span><span class="ct"><b>Wi-Fi</b><small id="wifiSub"></small></span></button>
+    <button class="card f" id="cAudio"><span class="ci" data-i="speaker"></span><span class="ct"><b>Audio</b><small id="audioSub"></small></span></button>
+    <button class="card f" id="cClock"><span class="ci" data-i="moon"></span><span class="ct"><b id="tClock"></b><small id="sClock"></small></span></button>
+    <button class="card f" id="cWall"><span class="ci" data-i="image"></span><span class="ct"><b id="tWall"></b><small id="wallSub"></small></span></button>
+    <div id="prow">
+      <button class="rb f" id="rSearch"><span data-i="search"></span></button>
+      <button class="rb f" id="rAccess"><span data-i="access"></span></button>
+      <button class="rb f" id="rDisplay"><span data-i="display"></span></button>
+      <button class="rb f" id="rSet"><span data-i="gear"></span></button>
+    </div>
+  </div>
+  <div id="ram"></div>
+</aside>
+
+<section id="all"><h2 id="allT"></h2><div id="apps"></div></section>
+<div id="big"><div id="bigtime"></div><div id="bigdate"></div></div>
+<div id="toast"></div>
+
+<script>
+/* =====================================================================
+   CONFIGURACIÓN  —  edita aquí lo que quieras cambiar
+   ===================================================================== */
+const CONFIG = {
+  lang: 'es',                 // 'es' o 'en'
+  hour12: false,              // true = 7:32 PM
+  // Apps del dock: [paquete, nombre]. Si no está instalada, se omite.
+  pinned: [
+    ['com.google.android.youtube.tv', 'YouTube'],
+    ['com.stremio.one',               'Stremio'],
+    ['com.netflix.ninja',             'Netflix'],
+    ['com.disney.disneyplus',         'Disney+'],
+    ['com.spotify.tv.android',        'Spotify'],
+    ['com.amazon.amazonvideo.livingroom', 'Prime Video'],
+  ],
+  storeApp: 'com.android.vending',        // botón "Tienda"
+  musicApp: 'com.spotify.tv.android',     // botón "Escuchar"
+  wallpaper: 'stars',                     // stars | drive | aurora
+  city: 'La Paz',                         // ciudad para el clima (cámbiala)
+  celsius: true
+};
+
+const WALLPAPERS = ['stars', 'drive', 'aurora'];
+const STR = {
+  es: { store:'Tienda', wifi:'Wi-Fi', audio:'Audio', speakers:'Altavoces TV', clock:'Reloj', startNow:'Iniciar',
+        wall:'Fondo', listen:'Escuchar', allApps:'Todas las apps', nothing:'Nada reproduciendo',
+        enableMedia:'Toca para activar la música', ramTxt:(r,s)=>r+' GB RAM · '+s+' GB libres', connected:'Conectado',
+        offline:'Sin conexión', wp:{stars:'Noche',drive:'Noche de carretera',aurora:'Aurora'} },
+  en: { store:'Store', wifi:'Wi-Fi', audio:'Audio', speakers:'TV speakers', clock:'Clock', startNow:'Start now',
+        wall:'Wallpaper', listen:'Listen', allApps:'All apps', nothing:'Nothing playing',
+        enableMedia:'Tap to enable music', ramTxt:(r,s)=>r+' GB RAM · '+s+' GB storage free', connected:'Connected',
+        offline:'Offline', wp:{stars:'Night',drive:'Night drive',aurora:'Aurora'} }
+};
+const T = STR[CONFIG.lang] || STR.es;
+const LOCALE = CONFIG.lang === 'en' ? 'en-US' : 'es-ES';
+
+/* =====================================================================
+   Puente con Android (si abres esto en un navegador usa datos de prueba)
+   ===================================================================== */
+const mock = {
+  apps:()=>JSON.stringify(CONFIG.pinned.map(p=>({pkg:p[0],label:p[1]})).concat([{pkg:'x.a',label:'Otra app'},{pkg:'x.b',label:'Juegos'}])),
+  icon:p=>{const c=document.createElement('canvas');c.width=320;c.height=180;const g=c.getContext('2d');const hs={'com.google.android.youtube.tv':'#ff0000','com.stremio.one':'#6b4cff','com.netflix.ninja':'#e50914','com.disney.disneyplus':'#0b5fff','com.spotify.tv.android':'#1db954'};g.fillStyle='#fff';g.fillRect(0,0,320,180);g.fillStyle=hs[p]||'#f0a020';g.fillRect(60,50,200,80);return JSON.stringify({banner:true,data:c.toDataURL()})}, launch:p=>{toast('Abrir '+p);return true}, settings:k=>toast('Ajustes: '+k),
+  info:()=>JSON.stringify({ssid:'MiWiFi',online:true,ramFree:'1.1',storageFree:'22.6'}),
+  media:()=>JSON.stringify({access:true,active:true,title:'(madness) !',artist:'LUCKI',playing:true,pos:42000,dur:190000,artKey:'k'}),
+  mediaArt:()=>'', mediaCmd:c=>toast('Media: '+c)
+};
+const A = window.Android || mock;
+const J = s => { try { return JSON.parse(s); } catch (e) { return null; } };
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let toastT; function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),1800); }
+
+/* ---------- Iconos ---------- */
+const IC = {
+  store:'<path d="M6 8h12l-1 12H7L6 8z"/><path d="M9 8a3 3 0 016 0"/>',
+  wifi:'<path d="M2 9a15 15 0 0120 0"/><path d="M5 12.5a10 10 0 0114 0"/><path d="M8.5 16a5 5 0 017 0"/><circle cx="12" cy="19" r="1" fill="currentColor"/>',
+  toggle:'<rect x="3" y="4" width="18" height="7" rx="3.5"/><circle cx="17" cy="7.5" r="2" fill="currentColor"/><rect x="3" y="13" width="18" height="7" rx="3.5"/><circle cx="7" cy="16.5" r="2" fill="currentColor"/>',
+  gear:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/>',
+  search:'<circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/>',
+  access:'<circle cx="12" cy="5" r="2"/><path d="M5 9h14M12 9v6M9 21l3-6 3 6"/>',
+  display:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+  speaker:'<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9a4 4 0 010 6"/>',
+  moon:'<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>',
+  image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M4 18l5-5 4 4 3-3 4 4"/>',
+  headphones:'<path d="M4 15v-3a8 8 0 0116 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/>',
+  grid:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
+  prev:'<path d="M7 5h2v14H7zM19 5v14L10 12z"/>',
+  next:'<path d="M15 5h2v14h-2zM5 5v14l9-7z"/>',
+  play:'<path d="M8 5v14l11-7z"/>',
+  pause:'<path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/>'
+};
+const svg = n => '<svg viewBox="0 0 24 24">' + (IC[n] || '') + '</svg>';
+function paintIcons(root){ (root||document).querySelectorAll('[data-i]').forEach(e => { if(!e.firstChild) e.innerHTML = svg(e.dataset.i); }); }
+
+/* ---------- Textos ---------- */
+$('lStore').textContent = T.store;
+$('lListen').textContent = T.listen;
+$('tClock').textContent = T.clock; $('sClock').textContent = T.startNow;
+$('tWall').textContent = T.wall;
+$('audioSub').textContent = T.speakers;
+$('allT').textContent = T.allApps;
+$('ssid').textContent = T.wifi;
+
+/* ---------- Reloj ---------- */
+let lastMin = '';
+function tick(){
+  const d = new Date();
+  const time = d.toLocaleTimeString(LOCALE, {hour:'numeric', minute:'2-digit', hour12:CONFIG.hour12}).replace(/\s?[ap]\.?\s?m\.?/i, m=>m.toUpperCase());
+  if (time === lastMin) return; lastMin = time;
+  let date = d.toLocaleDateString(LOCALE, {weekday:'long', day:'numeric', month:'long'});
+  date = date.charAt(0).toUpperCase() + date.slice(1);
+  $('time').textContent = time; $('date').textContent = date;
+  $('bigtime').textContent = time; $('bigdate').textContent = date;
+}
+setInterval(tick, 1000); tick();
+
+/* ---------- Clima (Open-Meteo, gratis y sin clave) ---------- */
+IC.sun='<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8"/>';
+IC.cloud='<path d="M7 18a4 4 0 01-.5-8A5.5 5.5 0 0117 8.5 4.8 4.8 0 0117.5 18H7z"/>';
+IC.partly='<circle cx="8.5" cy="8.5" r="3"/><path d="M8.5 2.5v1.5M2.5 8.5H4M4.3 4.3l1 1M12.7 4.3l-1 1"/><path d="M9 20a3.5 3.5 0 01-.3-7A4.8 4.8 0 0118 14a3.2 3.2 0 01-.5 6H9z"/>';
+IC.rain='<path d="M7 15a4 4 0 01-.5-8A5.5 5.5 0 0117 5.5 4.8 4.8 0 0117.5 15H7z"/><path d="M8 18.5l-1 2.5M12 18.5l-1 2.5M16 18.5l-1 2.5"/>';
+IC.snow='<path d="M7 15a4 4 0 01-.5-8A5.5 5.5 0 0117 5.5 4.8 4.8 0 0117.5 15H7z"/><path d="M8 19h.01M12 20.5h.01M16 19h.01M10 22h.01M14 22h.01"/>';
+IC.storm='<path d="M7 14a4 4 0 01-.5-8A5.5 5.5 0 0117 4.5 4.8 4.8 0 0117.5 14H7z"/><path d="M12.5 14l-3 4.5h4l-2 4"/>';
+IC.fog='<path d="M4 9h16M3 13h18M6 17h12"/>';
+IC.moonc='<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>';
+const WX = {es:{0:'Despejado',1:'Mayormente despejado',2:'Parcialmente nublado',3:'Nublado',45:'Niebla',48:'Niebla',51:'Llovizna',53:'Llovizna',55:'Llovizna',61:'Lluvia',63:'Lluvia',65:'Lluvia fuerte',71:'Nieve',73:'Nieve',75:'Nieve',80:'Chubascos',81:'Chubascos',82:'Chubascos',95:'Tormenta',96:'Tormenta',99:'Tormenta'},
+            en:{0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Cloudy',45:'Fog',48:'Fog',51:'Drizzle',53:'Drizzle',55:'Drizzle',61:'Rain',63:'Rain',65:'Heavy rain',71:'Snow',73:'Snow',75:'Snow',80:'Showers',81:'Showers',82:'Showers',95:'Storm',96:'Storm',99:'Storm'}};
+function wxIcon(code, day){
+  if (code === 0 || code === 1) return day ? 'sun' : 'moonc';
+  if (code === 2) return day ? 'partly' : 'cloud';
+  if (code === 3) return 'cloud';
+  if (code === 45 || code === 48) return 'fog';
+  if (code >= 51 && code <= 67) return 'rain';
+  if (code >= 71 && code <= 77) return 'snow';
+  if (code >= 80 && code <= 82) return 'rain';
+  if (code >= 95) return 'storm';
+  return 'cloud';
+}
+let geo = null;
+async function loadWeather(){
+  try {
+    if (!geo) {
+      const g = await (await fetch('https://geocoding-api.open-meteo.com/v1/search?count=1&name=' + encodeURIComponent(CONFIG.city))).json();
+      if (!g.results || !g.results.length) return;
+      geo = g.results[0];
+    }
+    const unit = CONFIG.celsius ? 'celsius' : 'fahrenheit';
+    const w = await (await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + geo.latitude + '&longitude=' + geo.longitude +
+              '&current=temperature_2m,weather_code,is_day&temperature_unit=' + unit)).json();
+    const c = w.current; if (!c) return;
+    $('wxi').innerHTML = svg(wxIcon(c.weather_code, c.is_day === 1));
+    $('wxt').textContent = Math.round(c.temperature_2m) + '°';
+    $('wxc').textContent = (WX[CONFIG.lang] || WX.es)[c.weather_code] || '';
+    $('wx').classList.remove('hide');
+  } catch (e) { /* sin internet: el clima queda oculto */ }
+}
+loadWeather(); setInterval(loadWeather, 15 * 60 * 1000);
+
+/* ---------- Fondos ---------- */
+let wpIndex = Math.max(0, WALLPAPERS.indexOf(CONFIG.wallpaper));
+try { const s = localStorage.getItem('wp'); if (s && WALLPAPERS.includes(s)) wpIndex = WALLPAPERS.indexOf(s); } catch(e){}
+function applyWall(){
+  const k = WALLPAPERS[wpIndex];
+  $('wall').className = 'wp-' + k;
+  $('wallSub').textContent = T.wp[k];
+  try { localStorage.setItem('wp', k); } catch(e){}
+}
+applyWall();
+
+/* ---------- Apps / dock ---------- */
+let installed = [];
+const labels = {};
+function loadIcon(el, pkg, big){
+  setTimeout(() => {
+    const r = J(A.icon(pkg));
+    if (r && r.data) {
+      const img = new Image(); img.src = r.data; img.alt = '';
+      if (big) { el.classList.add(r.banner ? 'banner' : 'icon'); el.insertBefore(img, el.firstChild); }
+      else { const ph = el.querySelector('.ph'); if (ph) ph.replaceWith(img); }
+    }
+  }, 0);
+}
+function buildDock(){
+  installed = J(A.apps()) || [];
+  installed.forEach(a => labels[a.pkg] = a.label);
+  const row = $('row'); row.innerHTML = '';
+  CONFIG.pinned.forEach(([pkg, name]) => {
+    if (!labels[pkg]) return;
+    const b = document.createElement('button');
+    b.className = 'tile f'; b.dataset.pkg = pkg;
+    b.innerHTML = '<span class="tl">' + esc(name || labels[pkg]) + '</span>';
+    b.onclick = () => A.launch(pkg);
+    row.appendChild(b); loadIcon(b, pkg, true);
+  });
+  const all = document.createElement('button');
+  all.className = 'tile allapps f'; all.innerHTML = svg('grid'); all.onclick = openAll;
+  row.appendChild(all);
+}
+function openAll(){
+  const box = $('apps'); box.innerHTML = '';
+  installed.slice().sort((a,b)=>a.label.localeCompare(b.label)).forEach(a => {
+    const b = document.createElement('button'); b.className = 'app f';
+    b.innerHTML = '<div class="ph"></div><span>' + esc(a.label) + '</span>';
+    b.onclick = () => { closeAll(); A.launch(a.pkg); };
+    box.appendChild(b); loadIcon(b, a.pkg, false);
+  });
+  $('all').classList.add('open'); focusFirst($('all'));
+}
+function closeAll(){ $('all').classList.remove('open'); }
+
+/* ---------- Panel ---------- */
+function openPanel(){ $('panel').classList.add('open'); focusEl($('pmedia')); }
+function closePanel(){ $('panel').classList.remove('open'); focusEl($('bPanel')); }
+
+/* ---------- Información del sistema ---------- */
+function refreshInfo(){
+  const i = J(A.info()); if (!i) return;
+  $('ssid').textContent = i.ssid || T.wifi;
+  $('wifiSub').textContent = i.online ? (i.ssid || T.connected) : T.offline;
+  $('ram').textContent = T.ramTxt(i.ramFree, i.storageFree);
+}
+setInterval(refreshInfo, 15000);
+
+/* ---------- Música ---------- */
+let lastArt = '';
+const mmss = ms => { const s = Math.max(0, Math.floor(ms/1000)); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); };
+function pollMedia(){
+  const m = J(A.media()); if (!m) return;
+  const on = m.access && m.active;
+  $('np').classList.toggle('hide', !on);
+  if (on) {
+    $('ttl').textContent = m.title; $('art2').textContent = m.artist;
+    $('pTitle').textContent = m.title; $('pSub').textContent = m.artist;
+    if (m.artKey !== lastArt) { lastArt = m.artKey; const a = A.mediaArt(); $('art').src = a || ''; $('pArt').src = a || ''; }
+    $('ppIcon').innerHTML = svg(m.playing ? 'pause' : 'play');
+    $('pos').textContent = mmss(m.pos);
+    $('fill').style.width = (m.dur > 0 ? Math.min(100, m.pos / m.dur * 100) : 0) + '%';
+    $('pArt').style.visibility = 'visible';
+  } else {
+    $('pTitle').textContent = m.access ? T.nothing : T.enableMedia;
+    $('pSub').textContent = '';
+    $('pArt').removeAttribute('src'); $('pArt').style.visibility = 'hidden'; lastArt = '';
+  }
+}
+setInterval(pollMedia, 1000);
+$('pmedia').onclick = () => { const m = J(A.media()); if (m && !m.access) A.settings('notif'); else A.mediaCmd('toggle'); setTimeout(pollMedia, 300); };
+document.querySelectorAll('[data-cmd]').forEach(b => b.onclick = () => { A.mediaCmd(b.dataset.cmd); setTimeout(pollMedia, 300); });
+$('bListen').onclick = () => { const m = J(A.media()); A.launch(m && m.pkg ? m.pkg : CONFIG.musicApp); };
+
+/* ---------- Botones ---------- */
+$('bStore').onclick = () => A.launch(CONFIG.storeApp);
+$('bWifi').onclick  = () => A.settings('wifi');
+$('bPanel').onclick = () => $('panel').classList.contains('open') ? closePanel() : openPanel();
+$('bSet').onclick   = () => A.settings('main');
+$('cWifi').onclick  = () => A.settings('wifi');
+$('cAudio').onclick = () => A.settings('sound');
+$('cClock').onclick = () => { $('panel').classList.remove('open'); $('big').classList.add('open'); };
+$('cWall').onclick  = () => { wpIndex = (wpIndex + 1) % WALLPAPERS.length; applyWall(); };
+$('rSearch').onclick  = () => A.settings('search');
+$('rAccess').onclick  = () => A.settings('access');
+$('rDisplay').onclick = () => A.settings('display');
+$('rSet').onclick     = () => A.settings('main');
+$('big').onclick = () => $('big').classList.remove('open');
+
+/* =====================================================================
+   Navegación con el control remoto (flechas + OK)
+   ===================================================================== */
+const visible = el => el.getClientRects().length > 0;
+function scope(){
+  if ($('all').classList.contains('open')) return [...$('all').querySelectorAll('.f')];
+  if ($('panel').classList.contains('open')) return [...$('panel').querySelectorAll('.f')].concat([$('bPanel')]);
+  return [...document.querySelectorAll('.f')].filter(e => !e.closest('#panel') && !e.closest('#all') && visible(e));
+}
+function focusEl(el){
+  if (!el) return;
+  el.focus({preventScroll:true});
+  if (el.classList.contains('tile') || el.classList.contains('app'))
+    el.scrollIntoView({inline:'center', block:'nearest', behavior:'smooth'});
+}
+function focusFirst(root){ focusEl((root || document).querySelector('.f')); }
+function move(dir){
+  const list = scope(), cur = document.activeElement;
+  if (!cur || !list.includes(cur)) { focusEl(list.find(e => e.classList.contains('tile')) || list[0]); return; }
+  const r = cur.getBoundingClientRect(), cx = r.left + r.width/2, cy = r.top + r.height/2;
+  let best = null, bs = 1e12;
+  for (const el of list) {
+    if (el === cur) continue;
+    const q = el.getBoundingClientRect(), dx = q.left + q.width/2 - cx, dy = q.top + q.height/2 - cy;
+    let p, s;
+    if (dir === 'ArrowRight') { if (dx <= 2) continue; p = dx; s = Math.abs(dy); }
+    else if (dir === 'ArrowLeft') { if (dx >= -2) continue; p = -dx; s = Math.abs(dy); }
+    else if (dir === 'ArrowDown') { if (dy <= 2) continue; p = dy; s = Math.abs(dx); }
+    else { if (dy >= -2) continue; p = -dy; s = Math.abs(dx); }
+    const score = p + s * 2.4;
+    if (score < bs) { bs = score; best = el; }
+  }
+  if (best) focusEl(best);
+}
+function back(){
+  if ($('big').classList.contains('open')) return $('big').classList.remove('open');
+  if ($('all').classList.contains('open')) { closeAll(); return focusFirst($('row')); }
+  if ($('panel').classList.contains('open')) return closePanel();
+  focusFirst($('row'));
+}
+window.onBack = back;
+window.onHome = () => { $('big').classList.remove('open'); closeAll(); $('panel').classList.remove('open'); focusFirst($('row')); };
+
+addEventListener('keydown', e => {
+  if ($('big').classList.contains('open')) { e.preventDefault(); $('big').classList.remove('open'); return; }
+  if (e.key.startsWith('Arrow')) { e.preventDefault(); move(e.key); }
+  else if (e.key === 'Escape' || e.key === 'GoBack' || e.key === 'BrowserBack' || e.key === 'Backspace') { e.preventDefault(); back(); }
+  else if (e.key === 'MediaPlayPause') A.mediaCmd('toggle');
+  else if (e.key === 'MediaTrackNext') A.mediaCmd('next');
+  else if (e.key === 'MediaTrackPrevious') A.mediaCmd('prev');
+});
+
+/* ---------- Destello del color de la app ---------- */
+const colorCache = {};
+function dominantColor(img){
+  try {
+    const c = document.createElement('canvas'); c.width = c.height = 24;
+    const g = c.getContext('2d'); g.drawImage(img, 0, 0, 24, 24);
+    const d = g.getImageData(0, 0, 24, 24).data;
+    let r=0, gg=0, b=0, w=0;
+    for (let i=0;i<d.length;i+=4){
+      if (d[i+3] < 128) continue;
+      const mx=Math.max(d[i],d[i+1],d[i+2]), mn=Math.min(d[i],d[i+1],d[i+2]);
+      const sat = mx ? (mx-mn)/mx : 0;
+      if (mx < 50 || sat < .25) continue;           // ignora negro, blanco y grises
+      const wt = sat*sat*(mx/255);
+      r+=d[i]*wt; gg+=d[i+1]*wt; b+=d[i+2]*wt; w+=wt;
+    }
+    if (w > 0) return [Math.round(r/w), Math.round(gg/w), Math.round(b/w)];
+  } catch(e){}
+  return null;
+}
+function hashColor(str){
+  let h = 0; for (const ch of str) h = (h*31 + ch.charCodeAt(0)) % 360;
+  const f = (n)=>{ const k=(n+h/30)%12; return Math.round(255*(.62 - .38*Math.max(-1, Math.min(k-3, 9-k, 1)))); };
+  return [f(0), f(8), f(4)];
+}
+function colorFor(el){
+  const key = el.dataset.pkg || el.textContent;
+  if (colorCache[key]) return colorCache[key];
+  const img = el.querySelector('img');
+  let col = (img && img.complete && img.naturalWidth) ? dominantColor(img) : null;
+  if (!col) col = hashColor(key);
+  return colorCache[key] = col;
+}
+function glowFor(el){
+  const gl = $('glow');
+  if (!el || !(el.classList.contains('tile') || el.classList.contains('app')) || el.classList.contains('allapps')) {
+    gl.classList.remove('on'); return;
+  }
+  const col = colorFor(el), r = el.getBoundingClientRect();
+  gl.style.setProperty('--gc', col.join(','));
+  gl.style.setProperty('--gx', Math.round((r.left + r.width/2) / innerWidth * 100) + '%');
+  gl.classList.add('on');
+  gl.classList.remove('flash'); void gl.offsetWidth; gl.classList.add('flash');   // destello
+}
+document.addEventListener('focusin', e => glowFor(e.target));
+document.addEventListener('focusout', e => { if (!e.relatedTarget) $('glow').classList.remove('on'); });
+
+/* ---------- Inicio ---------- */
+paintIcons();
+buildDock(); refreshInfo(); pollMedia();
+focusFirst($('row'));
+</script>
+</body>
+</html>
