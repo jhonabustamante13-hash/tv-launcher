@@ -72,7 +72,8 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-l
 #wx .wt{display:flex;flex-direction:column;line-height:1.05}
 #wxt{font-size:2.2rem;font-weight:500}
 #wxc{font-size:1rem;color:rgba(255,255,255,.78);margin-top:.2rem}
-#pills{display:flex;gap:1rem}
+#pills{display:flex;gap:1.8rem}
+#bPanel{margin:0 .8rem}
 .pill{display:flex;align-items:center;gap:.7rem;height:3.4rem;padding:0 1.5rem;border-radius:2rem;
   background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.07) 50%,rgba(255,255,255,.14));border:.08rem solid rgba(255,255,255,.34);
   box-shadow:inset 0 .1rem .2rem rgba(255,255,255,.5),0 .5rem 1.4rem rgba(0,0,0,.25);-webkit-backdrop-filter:blur(1.2rem) saturate(1.6);backdrop-filter:blur(1.2rem) saturate(1.6);font-size:1.3rem;font-weight:500;
@@ -80,13 +81,45 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-l
 .pill.round{width:3.4rem;padding:0;justify-content:center;font-size:1.6rem}
 .pill svg{font-size:1.5rem}
 
+#clock{text-align:left;cursor:pointer;transition:background .15s,transform .15s,color .15s}
+#clock:focus #date{color:#4a5060;text-shadow:none}
+#clock:focus .ct{text-shadow:none}
+
+/* ---------- Tarjeta del clima (al presionar la fecha/hora) ---------- */
+#wxo{position:fixed;inset:0;z-index:12;background:rgba(0,0,0,.38);-webkit-backdrop-filter:blur(.5rem);backdrop-filter:blur(.5rem);
+  display:flex;align-items:center;justify-content:center;visibility:hidden;opacity:0;transition:opacity .25s,visibility 0s .25s}
+#wxo.open{visibility:visible;opacity:1;transition:opacity .25s}
+#wxcard{width:62rem;padding:3rem 3.4rem 2.6rem;border-radius:3.2rem;color:#fff;text-shadow:0 .1rem .6rem rgba(0,0,0,.3);
+  transform:scale(.94) translateY(1.5rem);transition:transform .3s cubic-bezier(.2,.9,.3,1.1);
+  background:linear-gradient(135deg,rgba(255,255,255,.30) 0%,rgba(255,255,255,.08) 45%,rgba(255,255,255,.18) 100%);
+  -webkit-backdrop-filter:blur(2.2rem) saturate(1.8);backdrop-filter:blur(2.2rem) saturate(1.8)}
+#wxo.open #wxcard{transform:none}
+#wxcard .top{display:flex;justify-content:space-between;align-items:flex-start;gap:2rem}
+#wxd{font-size:1.5rem;font-weight:500;letter-spacing:.05rem;opacity:.95}
+#wxbig{display:flex;align-items:flex-start;line-height:1;margin-top:1rem}
+#wxbig b{font-size:9.2rem;font-weight:500;letter-spacing:-.3rem}
+#wxbig span{font-size:6.2rem;font-weight:200;margin:.2rem 0 0 .2rem;opacity:.9}
+#wxcard .right{padding-top:.4rem;min-width:19rem}
+#wxci{font-size:3.4rem;display:flex}
+#wxci svg{stroke-width:1.4}
+#wxfeel{font-size:1.5rem;margin:1rem 0 1.2rem}
+#wxcond{font-size:1.2rem;opacity:.8;margin:-.8rem 0 1.2rem}
+#wxhl{display:flex;gap:.9rem}
+#wxhl i{font-style:normal;font-size:1.5rem;font-weight:500;padding:.6rem 1.2rem;border-radius:1.2rem;background:rgba(0,0,0,.2);border:.06rem solid rgba(255,255,255,.18)}
+#wxdays{display:flex;justify-content:space-between;margin-top:2.2rem}
+.dchip{min-width:6.6rem;padding:.9rem 1rem;border-radius:1.4rem;font-family:"SF Mono","Roboto Mono",ui-monospace,Menlo,Consolas,monospace;font-size:1.4rem;letter-spacing:.12rem;text-align:center;text-transform:uppercase;transition:background .15s,transform .15s,color .15s}
+.dchip.sel{background:rgba(255,255,255,.28)}
+.dchip.f:focus{text-shadow:none}
+#wxnone{font-size:1.4rem;opacity:.8;text-align:center;padding:1rem 0}
+
 /* ---------- Foco ---------- */
 .f:focus{background:#fff!important;color:#10131c!important;transform:scale(1.05);z-index:3}
 .f:focus svg{stroke:#10131c}
 .f:focus .fillicon{fill:#10131c}
 
 /* ---------- Música (home) ---------- */
-#np{position:fixed;left:5rem;right:5rem;bottom:24.5rem;z-index:4}
+#np{position:fixed;left:5rem;right:5rem;bottom:30.8rem;z-index:4;transition:opacity .25s}
+body.apptitle #np{opacity:0;pointer-events:none}
 #np .row{display:flex;gap:2rem;align-items:flex-end}
 #art{width:8.4rem;height:8.4rem;border-radius:1rem;object-fit:cover;background:var(--glass2);box-shadow:0 .5rem 1.6rem rgba(0,0,0,.45)}
 #np .meta{flex:1;min-width:0}
@@ -104,7 +137,7 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-l
 #bar .trk i{display:block;height:100%;width:0;background:#fff}
 
 /* ---------- Dock de apps ---------- */
-#dock{position:fixed;left:5rem;right:5rem;bottom:5rem;height:15.4rem;border-radius:2.4rem;
+#dock{position:fixed;left:5rem;right:5rem;bottom:15.6rem;height:14rem;border-radius:2.4rem;
   background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.06));border:.08rem solid var(--line);
   overflow:hidden;z-index:4}
 #row{display:flex;align-items:center;gap:1.4rem;height:100%;padding:0 1.8rem;width:max-content}
@@ -116,17 +149,44 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-l
 .tile.icon img{width:3.6rem;height:3.6rem;border-radius:.8rem}
 .tile .tl{font-size:1.05rem;font-weight:500;padding:0 .6rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .tile.banner .tl{display:none}
-.tile.f:focus{width:19rem;height:10.7rem;transform:none;background:#fff!important;box-shadow:0 .8rem 2.4rem rgba(0,0,0,.5)}
-.tile.f:focus .tl{color:#10131c}
+.tile.f:focus{width:19rem;height:10.7rem;transform:none;background:rgba(20,24,40,.96)!important;color:#fff!important;
+  border-color:rgb(var(--tc,255,255,255));
+  box-shadow:0 0 0 .2rem rgba(8,12,24,.92),0 0 0 .42rem rgb(var(--tc,255,255,255)),0 0 1.2rem .3rem rgba(var(--tc,255,255,255),.6)}
+.tile.f:focus .tl{color:#fff}
+.tile{--tc:255,255,255}
 .tile.allapps{width:7rem}
 .tile.allapps:focus{width:9rem}
 .tile.allapps svg{font-size:2.4rem}
 
+/* título de la app seleccionada */
+#apptitle{position:fixed;left:5rem;right:5rem;bottom:30.8rem;z-index:4;opacity:0;pointer-events:none;transition:opacity .25s;text-shadow:0 .1rem .9rem rgba(0,0,0,.55)}
+body.apptitle #apptitle{opacity:1}
+#apptitle .at{font-size:6rem;font-weight:500;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.05rem}
+#apptitle .as{font-size:1.5rem;color:var(--dim);margin-top:.8rem}
+#apptitle .as b{color:#fff;font-weight:500}
+#apptitle .dots{display:flex;gap:.8rem;align-items:center;margin-top:1.8rem;height:1rem}
+#apptitle .dots i{width:.9rem;height:.9rem;border-radius:50%;background:rgba(255,255,255,.38);transition:width .2s,background .2s}
+#apptitle .dots i.on{width:3.8rem;border-radius:.5rem;background:#fff}
+#apptitle.pop .at,#apptitle.pop .as{animation:pop .3s ease-out}
+@keyframes pop{from{opacity:0;transform:translateY(.8rem)}to{opacity:1;transform:none}}
+
+/* fila de las demás apps + botón de biblioteca */
+#more{position:fixed;left:5rem;right:5rem;bottom:5.8rem;height:8.6rem;border-radius:2rem;overflow:hidden;z-index:4;
+  background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.04));border:.08rem solid var(--line)}
+#mnone{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.25rem;color:var(--dim)}
+#mrow{display:flex;align-items:center;gap:1.1rem;height:100%;padding:0 1.4rem;width:max-content}
+.tile.mini{width:9.4rem;height:5.6rem;border-radius:1.1rem;gap:.2rem}
+.tile.mini.icon img{width:2.7rem;height:2.7rem;border-radius:.6rem}
+.tile.mini .tl{font-size:.95rem}
+.tile.mini.f:focus{width:11.2rem;height:6.7rem;box-shadow:0 0 0 .15rem rgba(8,12,24,.92),0 0 0 .3rem rgb(var(--tc,255,255,255)),0 0 .5rem .3rem rgba(var(--tc,255,255,255),.5)}
+#libbtn{position:fixed;left:0;right:0;margin:0 auto;width:max-content;bottom:1.5rem;z-index:4;height:3.6rem;padding:0 2.6rem;font-size:1.4rem;border-radius:2.2rem}
+#libbtn svg{font-size:1.6rem}
+
 /* ---------- Panel de control ---------- */
-#panel{position:fixed;right:5rem;top:7.4rem;width:34rem;z-index:8;visibility:hidden;opacity:0;
+#panel{position:fixed;right:5rem;top:8.4rem;width:34rem;z-index:8;visibility:hidden;opacity:0;
   transform:translateX(2.5rem);transition:opacity .2s,transform .2s,visibility 0s .2s}
 #panel.open{visibility:visible;opacity:1;transform:none;transition:opacity .2s,transform .2s}
-#grid{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:4.9rem;gap:.9rem}
+#grid{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:4.9rem;gap:1.3rem}
 .card{border-radius:1.8rem;background:rgba(40,46,64,.78);border:.08rem solid var(--line);padding:1rem 1.3rem;
   display:flex;align-items:center;gap:1rem;text-align:left;transition:background .15s,transform .15s}
 .card .ci{width:2.9rem;height:2.9rem;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex:none}
@@ -141,13 +201,23 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-l
 #pmedia .pm-b b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:1.2rem}
 #prow{grid-column:span 2;display:flex;justify-content:space-between;padding:.3rem .2rem}
 .rb{width:4.7rem;height:4.7rem;border-radius:50%;background:rgba(40,46,64,.78);border:.08rem solid var(--line);display:flex;align-items:center;justify-content:center;font-size:1.8rem}
-#ram{margin:.7rem 0 0;padding:.7rem 1.4rem;border-radius:1.4rem;background:rgba(40,46,64,.78);border:.08rem solid var(--line);font-size:1.05rem;color:var(--dim);text-align:right}
+#ram{margin:1.2rem 0 0;padding:.7rem 1.4rem;border-radius:1.4rem;background:rgba(40,46,64,.78);border:.08rem solid var(--line);font-size:1.05rem;color:var(--dim);text-align:right}
 
 /* ---------- Todas las apps ---------- */
 #all{position:fixed;inset:0;z-index:9;background:rgba(5,8,16,.9);padding:6rem 5rem 3rem;visibility:hidden;opacity:0;transition:opacity .2s,visibility 0s .2s}
 #all.open{visibility:visible;opacity:1;transition:opacity .2s}
 #all h2{font-size:2rem;font-weight:600;margin-bottom:2rem}
-#apps{display:grid;grid-template-columns:repeat(8,1fr);gap:1.6rem;max-height:calc(100vh - 17rem);overflow:hidden}
+#allH{font-size:1.25rem;color:var(--dim);margin:-1.2rem 0 1.8rem}
+#apps{display:grid;grid-template-columns:repeat(8,1fr);gap:1.6rem;max-height:calc(100vh - 21rem);overflow-y:auto;overflow-x:hidden;padding:.5rem;margin:-.5rem;scrollbar-width:none}
+#apps::-webkit-scrollbar{display:none}
+.app{position:relative}
+.app .pin{position:absolute;top:.6rem;right:.6rem;width:2.1rem;height:2.1rem;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.3rem}
+.app .pin svg{stroke:#fff!important;stroke-width:2.4}
+.app .pin .ck{display:none}
+.app.pinned .pin{background:#22b55e}
+.app.pinned .pin .ck{display:flex}
+.app.pinned .pin .pl{display:none}
+.app .pin span{display:flex}
 .app{display:flex;flex-direction:column;align-items:center;gap:.8rem;padding:1.3rem .6rem;border-radius:1.4rem;background:var(--glass);font-size:1.1rem;transition:transform .15s}
 .app img{width:5.4rem;height:5.4rem;border-radius:1.1rem;object-fit:cover}
 .app span{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -174,7 +244,7 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-l
 
 <header id="top">
   <div id="left">
-    <div id="clock" class="glass"><div class="ct"><span id="time"></span><span id="date"></span></div></div>
+    <button id="clock" class="glass f"><div class="ct"><span id="time"></span><span id="date"></span></div></button>
     <div id="wx" class="glass hide"><span id="wxi"></span><div class="wt"><b id="wxt"></b><span id="wxc"></span></div></div>
   </div>
   <nav id="pills">
@@ -184,6 +254,8 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-l
     <button class="pill round f" id="bSet"><span data-i="gear"></span></button>
   </nav>
 </header>
+
+<section id="apptitle"><div class="at" id="atName"></div><div class="as" id="atSub"></div><div class="dots" id="atDots"></div></section>
 
 <section id="np" class="hide">
   <div class="row">
@@ -203,6 +275,8 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-l
 </section>
 
 <section id="dock"><div id="row"></div></section>
+<section id="more"><div id="mrow"></div><div id="mnone" class="hide"></div></section>
+<button id="libbtn" class="pill f"><span data-i="grid"></span><span id="lLib"></span></button>
 
 <aside id="panel">
   <div id="grid">
@@ -224,7 +298,15 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-l
   <div id="ram"></div>
 </aside>
 
-<section id="all"><h2 id="allT"></h2><div id="apps"></div></section>
+<div id="wxo"><div id="wxcard" class="glass">
+  <div class="top">
+    <div><div id="wxd"></div><div id="wxbig"><b id="wxn">--</b><span id="wxu">C</span></div></div>
+    <div class="right"><div id="wxci"></div><div id="wxfeel"></div><div id="wxcond"></div><div id="wxhl"><i id="wxh"></i><i id="wxl"></i></div></div>
+  </div>
+  <div id="wxdays"></div>
+</div></div>
+
+<section id="all"><h2 id="allT"></h2><div id="allH"></div><div id="apps"></div></section>
 <div id="big"><div id="bigtime"></div><div id="bigdate"></div></div>
 <div id="toast"></div>
 
@@ -253,11 +335,13 @@ const CONFIG = {
 
 const WALLPAPERS = ['stars', 'drive', 'aurora'];
 const STR = {
-  es: { store:'Tienda', wifi:'Wi-Fi', audio:'Audio', speakers:'Altavoces TV', clock:'Reloj', startNow:'Iniciar',
+  es: { lastOpen:'Abierta por última vez', never:'Aún no la abres desde aquí', today:'Hoy', yest:'Ayer', noMore:'Todas tus apps están en el inicio', noApps:'No se pudo leer la lista de apps del sistema', lib:'Biblioteca de aplicaciones', libHint:'Selecciona una app para agregarla o quitarla del inicio', added:'Agregada al inicio', removed:'Quitada del inicio',
+        store:'Tienda', wifi:'Wi-Fi', audio:'Audio', speakers:'Altavoces TV', clock:'Reloj', startNow:'Iniciar',
         wall:'Fondo', listen:'Escuchar', allApps:'Todas las apps', nothing:'Nada reproduciendo',
         enableMedia:'Toca para activar la música', ramTxt:(r,s)=>r+' GB RAM · '+s+' GB libres', connected:'Conectado',
         offline:'Sin conexión', wp:{stars:'Noche',drive:'Noche de carretera',aurora:'Aurora'} },
-  en: { store:'Store', wifi:'Wi-Fi', audio:'Audio', speakers:'TV speakers', clock:'Clock', startNow:'Start now',
+  en: { lastOpen:'Last opened', never:'Not opened from here yet', today:'Today', yest:'Yesterday', noMore:'All your apps are on home', noApps:'Could not read the system app list', lib:'App library', libHint:'Select an app to add it to or remove it from home', added:'Added to home', removed:'Removed from home',
+        store:'Store', wifi:'Wi-Fi', audio:'Audio', speakers:'TV speakers', clock:'Clock', startNow:'Start now',
         wall:'Wallpaper', listen:'Listen', allApps:'All apps', nothing:'Nothing playing',
         enableMedia:'Tap to enable music', ramTxt:(r,s)=>r+' GB RAM · '+s+' GB storage free', connected:'Connected',
         offline:'Offline', wp:{stars:'Night',drive:'Night drive',aurora:'Aurora'} }
@@ -309,7 +393,7 @@ $('lListen').textContent = T.listen;
 $('tClock').textContent = T.clock; $('sClock').textContent = T.startNow;
 $('tWall').textContent = T.wall;
 $('audioSub').textContent = T.speakers;
-$('allT').textContent = T.allApps;
+$('allT').textContent = T.lib; $('allH').textContent = T.libHint; $('lLib').textContent = T.lib;
 $('ssid').textContent = T.wifi;
 
 /* ---------- Reloj ---------- */
@@ -347,7 +431,7 @@ function wxIcon(code, day){
   if (code >= 95) return 'storm';
   return 'cloud';
 }
-let geo = null;
+let geo = null, wxData = null, wxSel = 0;
 async function loadWeather(){
   try {
     if (!geo) {
@@ -357,8 +441,10 @@ async function loadWeather(){
     }
     const unit = CONFIG.celsius ? 'celsius' : 'fahrenheit';
     const w = await (await fetch('https://api.open-meteo.com/v1/forecast?latitude=' + geo.latitude + '&longitude=' + geo.longitude +
-              '&current=temperature_2m,weather_code,is_day&temperature_unit=' + unit)).json();
+              '&current=temperature_2m,apparent_temperature,weather_code,is_day' +
+              '&daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max&forecast_days=7&timezone=auto&temperature_unit=' + unit)).json();
     const c = w.current; if (!c) return;
+    wxData = w; if ($('wxo').classList.contains('open')) { const had = document.activeElement && document.activeElement.classList.contains('dchip'); renderDays(); if (!had) { const f = $('wxdays').querySelector('.dchip'); if (f) focusEl(f); } }
     $('wxi').innerHTML = svg(wxIcon(c.weather_code, c.is_day === 1));
     $('wxt').textContent = Math.round(c.temperature_2m) + '°';
     $('wxc').textContent = (WX[CONFIG.lang] || WX.es)[c.weather_code] || '';
@@ -366,6 +452,46 @@ async function loadWeather(){
   } catch (e) { /* sin internet: el clima queda oculto */ }
 }
 loadWeather(); setInterval(loadWeather, 15 * 60 * 1000);
+
+/* ---------- Tarjeta del clima ---------- */
+const parseDay = s => { const p = s.split('-').map(Number); return new Date(p[0], p[1]-1, p[2]); };
+function showDay(i){
+  wxSel = i;
+  const w = wxData; if (!w) return;
+  const d = w.daily, c = w.current, today = i === 0;
+  const dt = parseDay(d.time[i]);
+  $('wxd').textContent = dt.toLocaleDateString(LOCALE, {weekday:'long', day:'numeric', month:'short', year:'numeric'});
+  const main = today ? c.temperature_2m : d.temperature_2m_max[i];
+  const feel = today ? c.apparent_temperature : d.apparent_temperature_max[i];
+  const code = today ? c.weather_code : d.weather_code[i];
+  $('wxn').textContent = Math.round(main) + '°';
+  $('wxu').textContent = CONFIG.celsius ? 'C' : 'F';
+  $('wxci').innerHTML = svg(wxIcon(code, today ? c.is_day === 1 : true));
+  $('wxfeel').textContent = (CONFIG.lang === 'en' ? 'Feels like ' : 'Sensación ') + Math.round(feel) + '°';
+  $('wxcond').textContent = (WX[CONFIG.lang] || WX.es)[code] || '';
+  $('wxh').textContent = '↑ ' + Math.round(d.temperature_2m_max[i]) + '°';
+  $('wxl').textContent = '↓ ' + Math.round(d.temperature_2m_min[i]) + '°';
+  document.querySelectorAll('.dchip').forEach((b, k) => b.classList.toggle('sel', k === i));
+}
+function renderDays(){
+  const box = $('wxdays'); box.innerHTML = '';
+  if (!wxData) { box.innerHTML = '<div id="wxnone" style="width:100%">' + (CONFIG.lang === 'en' ? 'No weather data (check your connection)' : 'Sin datos del clima (revisa tu conexión)') + '</div>'; return; }
+  wxData.daily.time.forEach((t, i) => {
+    const b = document.createElement('button'); b.className = 'dchip f';
+    b.textContent = parseDay(t).toLocaleDateString(LOCALE, {weekday:'short'}).replace('.', '');
+    b.onfocus = () => showDay(i); b.onclick = () => showDay(i);
+    box.appendChild(b);
+  });
+  showDay(Math.min(wxSel, wxData.daily.time.length - 1));
+}
+function openWx(){
+  wxSel = 0; renderDays(); $('wxo').classList.add('open');
+  const first = $('wxdays').querySelector('.dchip'); if (first) focusEl(first); else document.activeElement && document.activeElement.blur();
+  loadWeather();
+}
+function closeWx(){ $('wxo').classList.remove('open'); focusEl($('clock')); }
+$('clock').onclick = openWx;
+$('wxo').onclick = e => { if (e.target === $('wxo')) closeWx(); };
 
 /* ---------- Fondos ---------- */
 let wpIndex = Math.max(0, WALLPAPERS.indexOf(CONFIG.wallpaper));
@@ -391,33 +517,82 @@ function loadIcon(el, pkg, big){
     }
   }, 0);
 }
+IC.check='<path d="M5 12.5l4.5 4.5L19 7.5"/>'; IC.plus='<path d="M12 5v14M5 12h14"/>';
+const cfgName = {}; CONFIG.pinned.forEach(p => cfgName[p[0]] = p[1]);
+let pinnedPk = null;
+function getPinned(){
+  if (pinnedPk) return pinnedPk;
+  let st = null; try { st = JSON.parse(localStorage.getItem('pinnedApps')); } catch(e){}
+  return pinnedPk = Array.isArray(st) ? st : CONFIG.pinned.map(p => p[0]);
+}
+function savePinned(){ try { localStorage.setItem('pinnedApps', JSON.stringify(pinnedPk)); } catch(e){} }
+let lastOpen = {};
+try { lastOpen = JSON.parse(localStorage.getItem('lastOpen')) || {}; } catch(e){}
+function markOpen(pkg){ lastOpen[pkg] = Date.now(); try { localStorage.setItem('lastOpen', JSON.stringify(lastOpen)); } catch(e){} }
+function whenText(ts){
+  const d = new Date(ts), n = new Date();
+  const t = d.toLocaleTimeString(LOCALE, {hour:'numeric', minute:'2-digit', hour12:true}).replace(/\s?([ap])\.?\s?m\.?/i, (m,x)=> CONFIG.lang==='en' ? ' '+x.toUpperCase()+'M' : ' '+x.toLowerCase()+'. m.');
+  const day0 = x => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((day0(n) - day0(d)) / 86400000);
+  if (diff === 0) return T.today + ', ' + t;
+  if (diff === 1) return T.yest + ', ' + t;
+  return d.toLocaleDateString(LOCALE, {day:'numeric', month:'short'}).replace('.', '') + ', ' + t;
+}
+function showAppTitle(el){
+  const pkg = el.dataset.pkg; if (!pkg) return;
+  const box = $('apptitle');
+  $('atName').textContent = cfgName[pkg] || labels[pkg] || pkg;
+  $('atSub').innerHTML = lastOpen[pkg] ? esc(T.lastOpen) + ' <b>' + esc(whenText(lastOpen[pkg])) + '</b>' : esc(T.never);
+  const sibs = [...el.parentNode.children].filter(x => x.classList.contains('tile')), n = sibs.length, idx = sibs.indexOf(el);
+  const max = Math.min(n, 12), on = n <= 12 ? idx : Math.round(idx / Math.max(1, n - 1) * (max - 1));
+  $('atDots').innerHTML = Array.from({length: max}, (_, k) => '<i' + (k === on ? ' class="on"' : '') + '></i>').join('');
+  box.classList.remove('pop'); void box.offsetWidth; box.classList.add('pop');
+  document.body.classList.add('apptitle');
+}
+function hideAppTitle(){ document.body.classList.remove('apptitle'); }
+function mkTile(pkg, mini){
+  const b = document.createElement('button');
+  b.className = 'tile f' + (mini ? ' mini' : ''); b.dataset.pkg = pkg;
+  b.innerHTML = '<span class="tl">' + esc(cfgName[pkg] || labels[pkg]) + '</span>';
+  b.onclick = () => { markOpen(pkg); A.launch(pkg); };
+  loadIcon(b, pkg, true); return b;
+}
 function buildDock(){
   installed = J(A.apps()) || [];
   installed.forEach(a => labels[a.pkg] = a.label);
+  const pins = getPinned();
   const row = $('row'); row.innerHTML = '';
-  CONFIG.pinned.forEach(([pkg, name]) => {
-    if (!labels[pkg]) return;
-    const b = document.createElement('button');
-    b.className = 'tile f'; b.dataset.pkg = pkg;
-    b.innerHTML = '<span class="tl">' + esc(name || labels[pkg]) + '</span>';
-    b.onclick = () => A.launch(pkg);
-    row.appendChild(b); loadIcon(b, pkg, true);
-  });
-  const all = document.createElement('button');
-  all.className = 'tile allapps f'; all.innerHTML = svg('grid'); all.onclick = openAll;
-  row.appendChild(all);
+  pins.forEach(pkg => { if (labels[pkg]) row.appendChild(mkTile(pkg, false)); });
+  const mrow = $('mrow'); mrow.innerHTML = '';
+  installed.forEach(a => { if (!a.label) a.label = a.pkg; labels[a.pkg] = a.label; });
+  installed.filter(a => a.pkg && !pins.includes(a.pkg)).sort((x, y) => String(x.label).localeCompare(String(y.label))).slice(0, 40)
+    .forEach(a => { try { mrow.appendChild(mkTile(a.pkg, true)); } catch(e){} });
+  $('mnone').textContent = installed.length ? T.noMore : T.noApps;
+  $('mnone').classList.toggle('hide', mrow.children.length > 0);
+}
+function focusHome(){ focusEl($('row').querySelector('.f') || $('mrow').querySelector('.f') || $('libbtn')); }
+function togglePin(pkg, el){
+  const pins = getPinned(), i = pins.indexOf(pkg);
+  if (i >= 0) pins.splice(i, 1); else pins.push(pkg);
+  savePinned(); el.classList.toggle('pinned', i < 0);
+  toast((i < 0 ? T.added : T.removed) + ' · ' + (cfgName[pkg] || labels[pkg]));
 }
 function openAll(){
+  installed = J(A.apps()) || installed;
+  installed.forEach(a => labels[a.pkg] = a.label);
+  const pins = getPinned();
   const box = $('apps'); box.innerHTML = '';
   installed.slice().sort((a,b)=>a.label.localeCompare(b.label)).forEach(a => {
-    const b = document.createElement('button'); b.className = 'app f';
-    b.innerHTML = '<div class="ph"></div><span>' + esc(a.label) + '</span>';
-    b.onclick = () => { closeAll(); A.launch(a.pkg); };
+    const b = document.createElement('button'); b.className = 'app f' + (pins.includes(a.pkg) ? ' pinned' : '');
+    b.dataset.pkg = a.pkg;
+    b.innerHTML = '<div class="ph"></div><span>' + esc(a.label) + '</span><i class="pin"><span class="ck">' + svg('check') + '</span><span class="pl">' + svg('plus') + '</span></i>';
+    b.onclick = () => togglePin(a.pkg, b);
     box.appendChild(b); loadIcon(b, a.pkg, false);
   });
   $('all').classList.add('open'); focusFirst($('all'));
 }
-function closeAll(){ $('all').classList.remove('open'); }
+function closeAll(){ if (!$('all').classList.contains('open')) return; $('all').classList.remove('open'); buildDock(); }
+$('libbtn').onclick = openAll;
 
 /* ---------- Panel ---------- */
 function openPanel(){ $('panel').classList.add('open'); focusEl($('pmedia')); }
@@ -478,9 +653,10 @@ $('big').onclick = () => $('big').classList.remove('open');
    ===================================================================== */
 const visible = el => el.getClientRects().length > 0;
 function scope(){
+  if ($('wxo').classList.contains('open')) return [...$('wxdays').querySelectorAll('.f')];
   if ($('all').classList.contains('open')) return [...$('all').querySelectorAll('.f')];
   if ($('panel').classList.contains('open')) return [...$('panel').querySelectorAll('.f')].concat([$('bPanel')]);
-  return [...document.querySelectorAll('.f')].filter(e => !e.closest('#panel') && !e.closest('#all') && visible(e));
+  return [...document.querySelectorAll('.f')].filter(e => !e.closest('#panel') && !e.closest('#all') && !e.closest('#wxo') && visible(e));
 }
 function focusEl(el){
   if (!el) return;
@@ -508,13 +684,14 @@ function move(dir){
   if (best) focusEl(best);
 }
 function back(){
+  if ($('wxo').classList.contains('open')) return closeWx();
   if ($('big').classList.contains('open')) return $('big').classList.remove('open');
-  if ($('all').classList.contains('open')) { closeAll(); return focusFirst($('row')); }
+  if ($('all').classList.contains('open')) { closeAll(); return focusEl($('libbtn')); }
   if ($('panel').classList.contains('open')) return closePanel();
-  focusFirst($('row'));
+  focusHome();
 }
 window.onBack = back;
-window.onHome = () => { $('big').classList.remove('open'); closeAll(); $('panel').classList.remove('open'); focusFirst($('row')); };
+window.onHome = () => { $('wxo').classList.remove('open'); $('big').classList.remove('open'); closeAll(); $('panel').classList.remove('open'); focusHome(); };
 
 addEventListener('keydown', e => {
   if ($('big').classList.contains('open')) { e.preventDefault(); $('big').classList.remove('open'); return; }
@@ -555,7 +732,7 @@ function colorFor(el){
   if (colorCache[key]) return colorCache[key];
   const img = el.querySelector('img');
   let col = (img && img.complete && img.naturalWidth) ? dominantColor(img) : null;
-  if (!col) col = hashColor(key);
+  if (!col) return hashColor(key);
   return colorCache[key] = col;
 }
 function glowFor(el){
@@ -564,18 +741,25 @@ function glowFor(el){
     gl.classList.remove('on'); return;
   }
   const col = colorFor(el), r = el.getBoundingClientRect();
+  el.style.setProperty('--tc', col.join(','));
   gl.style.setProperty('--gc', col.join(','));
   gl.style.setProperty('--gx', Math.round((r.left + r.width/2) / innerWidth * 100) + '%');
   gl.classList.add('on');
   gl.classList.remove('flash'); void gl.offsetWidth; gl.classList.add('flash');   // destello
 }
-document.addEventListener('focusin', e => glowFor(e.target));
-document.addEventListener('focusout', e => { if (!e.relatedTarget) $('glow').classList.remove('on'); });
+document.addEventListener('focusin', e => {
+  glowFor(e.target);
+  const t = e.target;
+  if (t.classList && t.classList.contains('tile')) showAppTitle(t); else hideAppTitle();
+});
+document.addEventListener('focusout', e => { if (!e.relatedTarget) { $('glow').classList.remove('on'); hideAppTitle(); } });
 
 /* ---------- Inicio ---------- */
 paintIcons();
 buildDock(); refreshInfo(); pollMedia();
-focusFirst($('row'));
+focusHome();
 </script>
 </body>
 </html>
+
+  
