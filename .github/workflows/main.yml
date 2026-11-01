@@ -33,6 +33,12 @@ jobs:
         with:
           gradle-version: '8.7'
 
+      - name: Marcar la versión dentro del launcher
+        run: |
+          ls -la *.html
+          grep -q "__BUILD__" index.html || { echo "::error::El index.html de tu repo es la versión VIEJA. Sube el nuevo con el nombre exacto index.html (en la raíz)"; exit 1; }
+          sed -i "s/__BUILD__/v${{ github.run_number }}-${GITHUB_SHA::7}/" index.html
+
       - name: Generar proyecto Android
         run: |
           set -e
@@ -79,8 +85,8 @@ jobs:
                   applicationId 'com.tvlauncher'
                   minSdk 21
                   targetSdk 34
-                  versionCode 1
-                  versionName '1.0'
+                  versionCode ${{ github.run_number }}
+                  versionName '1.${{ github.run_number }}'
               }
               compileOptions {
                   sourceCompatibility JavaVersion.VERSION_17
@@ -464,6 +470,14 @@ jobs:
           EOF_FILE
           cp index.html android/app/src/main/assets/index.html
 
+      - name: Usar siempre la misma firma (para actualizar sin desinstalar)
+        run: |
+          if [ -f debug.keystore ]; then
+            mkdir -p ~/.android && cp debug.keystore ~/.android/debug.keystore
+          else
+            echo "::warning::Falta debug.keystore en la raíz del repo: cada build se firma distinto y Android no deja actualizar encima"
+          fi
+
       - name: Compilar APK
         working-directory: android
         run: gradle assembleDebug --no-daemon --stacktrace
@@ -476,5 +490,6 @@ jobs:
         with:
           tag_name: v${{ github.run_number }}
           name: Launcher v${{ github.run_number }}
+          body: Versión visible en la app (panel de control, abajo) - v${{ github.run_number }}
           files: launcher.apk
           make_latest: true
