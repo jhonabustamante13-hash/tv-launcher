@@ -260,7 +260,8 @@ body.apptitle #apptitle{opacity:1}
 .lens{position:absolute;left:0;top:0;z-index:5;pointer-events:none;opacity:0;transition:opacity .2s;border-radius:1.4rem;
   background:linear-gradient(135deg,rgba(255,255,255,.32),rgba(255,255,255,.04) 50%,rgba(255,255,255,.2));
   border:.1rem solid rgba(255,255,255,.75);
-  box-shadow:inset 0 .12rem .25rem rgba(255,255,255,.7),inset 0 -.1rem .3rem rgba(var(--tc,255,255,255),.5),0 0 1.4rem rgba(var(--tc,255,255,255),.55);}
+  box-shadow:inset 0 .12rem .25rem rgba(255,255,255,.7),inset 0 -.1rem .3rem rgba(var(--tc,255,255,255),.5),0 0 1.4rem rgba(var(--tc,255,255,255),.55);
+  -webkit-backdrop-filter:blur(.25rem) saturate(1.6);backdrop-filter:blur(.25rem) saturate(1.6)}
 .lens::after{content:"";position:absolute;inset:-.25rem;border-radius:1.6rem;border:.08rem solid rgba(255,255,255,.32)}
 .lens.on{opacity:1}
 
@@ -393,12 +394,12 @@ const CONFIG = {
 CONFIG.showMore = true;    // false = oculta la fila de apps secundarias bajo el dock
 const WALLPAPERS = ['stars', 'drive', 'aurora'];
 const STR = {
-  es: { saverHint:'Haz clic para salir', cReplace:'Reemplazar por otra app', cMove:'Mover', cRemove:'Quitar del inicio', cAdd:'Agregar al inicio', cInfo:'Información de la app', cDefault:'Launcher predeterminado', cHide:'Ocultar aplicación', cUnhide:'Mostrar aplicación', cUninstall:'Eliminar aplicación', hidden:'Oculta', shown:'Visible',  moveHint:'◀ ▶ para mover · OK para terminar', replaceT:n=>'Reemplazar '+n+' por…', replaceHint:'Elige la app que tomará su lugar', replaced:'Reemplazada', lastOpen:'Abierta por última vez', never:'Aún no la abres desde aquí', today:'Hoy', yest:'Ayer', noMore:'Todas tus apps están en el inicio', noApps:'No se pudo leer la lista de apps del sistema', lib:'Biblioteca de aplicaciones', libHint:'Selecciona una app para agregarla o quitarla del inicio', added:'Agregada al inicio', removed:'Quitada del inicio',
+  es: { saverHint:'Haz clic para salir', cReplace:'Reemplazar por otra app', cMove:'Mover', cRemove:'Quitar del inicio', cAdd:'Agregar al inicio', cInfo:'Información de la app', cDefault:'Launcher predeterminado', moveHint:'◀ ▶ para mover · OK para terminar', replaceT:n=>'Reemplazar '+n+' por…', replaceHint:'Elige la app que tomará su lugar', replaced:'Reemplazada', lastOpen:'Abierta por última vez', never:'Aún no la abres desde aquí', today:'Hoy', yest:'Ayer', noMore:'Todas tus apps están en el inicio', noApps:'No se pudo leer la lista de apps del sistema', lib:'Biblioteca de aplicaciones', libHint:'Selecciona una app para agregarla o quitarla del inicio', added:'Agregada al inicio', removed:'Quitada del inicio',
         store:'Tienda', wifi:'Wi-Fi', audio:'Audio', speakers:'Altavoces TV', clock:'Reloj', startNow:'Iniciar',
         wall:'Fondo', listen:'Escuchar', allApps:'Todas las apps', nothing:'Nada reproduciendo',
         enableMedia:'Toca para activar la música', ramTxt:(r,s)=>r+' GB RAM · '+s+' GB libres', connected:'Conectado',
         offline:'Sin conexión', wp:{stars:'Noche',drive:'Noche de carretera',aurora:'Aurora'} },
-  en: { saverHint:'Click to exit', cReplace:'Replace with another app', cMove:'Move', cRemove:'Remove from home', cAdd:'Add to home', cInfo:'App info', cDefault:'Set as default launcher', cHide:'Hide app', cUnhide:'Show app', cUninstall:'Uninstall app', hidden:'Hidden', shown:'Shown',  moveHint:'◀ ▶ to move · OK to finish', replaceT:n=>'Replace '+n+' with…', replaceHint:'Pick the app that will take its place', replaced:'Replaced', lastOpen:'Last opened', never:'Not opened from here yet', today:'Today', yest:'Yesterday', noMore:'All your apps are on home', noApps:'Could not read the system app list', lib:'App library', libHint:'Select an app to add it to or remove it from home', added:'Added to home', removed:'Removed from home',
+  en: { saverHint:'Click to exit', cReplace:'Replace with another app', cMove:'Move', cRemove:'Remove from home', cAdd:'Add to home', cInfo:'App info', cDefault:'Set as default launcher', moveHint:'◀ ▶ to move · OK to finish', replaceT:n=>'Replace '+n+' with…', replaceHint:'Pick the app that will take its place', replaced:'Replaced', lastOpen:'Last opened', never:'Not opened from here yet', today:'Today', yest:'Yesterday', noMore:'All your apps are on home', noApps:'Could not read the system app list', lib:'App library', libHint:'Select an app to add it to or remove it from home', added:'Added to home', removed:'Removed from home',
         store:'Store', wifi:'Wi-Fi', audio:'Audio', speakers:'TV speakers', clock:'Clock', startNow:'Start now',
         wall:'Wallpaper', listen:'Listen', allApps:'All apps', nothing:'Nothing playing',
         enableMedia:'Tap to enable music', ramTxt:(r,s)=>r+' GB RAM · '+s+' GB storage free', connected:'Connected',
@@ -578,7 +579,7 @@ function loadIcon(el, pkg, big){
 }
 IC.swap='<path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/>'; IC.move='<path d="M12 3v18M3 12h18M8 7l4-4 4 4M8 17l4 4 4-4M7 8l-4 4 4 4M17 8l4 4-4 4"/>';
 IC.trash='<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'; IC.info='<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>'; IC.home='<path d="M4 11l8-7 8 7M6 10v10h12V10"/>';
-IC.eyeoff='<path d="M3 3l18 18M10.6 6.2A9.5 9.5 0 0121 12a13 13 0 01-3 3.8M6.5 7.6A13 13 0 003 12s3.5 6 9 6a8.6 8.6 0 003.4-.7M9.9 9.9a3 3 0 004.2 4.2"/>'; IC.eye='<path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"/><circle cx="12" cy="12" r="3"/>'; IC.check='<path d="M5 12.5l4.5 4.5L19 7.5"/>'; IC.plus='<path d="M12 5v14M5 12h14"/>';
+IC.check='<path d="M5 12.5l4.5 4.5L19 7.5"/>'; IC.plus='<path d="M12 5v14M5 12h14"/>';
 const cfgName = {}; CONFIG.pinned.forEach(p => cfgName[p[0]] = p[1]);
 let pinnedPk = null;
 function getPinned(){
@@ -624,18 +625,15 @@ function mkTile(pkg, mini){
   b.oncontextmenu = e => { e.preventDefault(); openCtx(b); };
   loadIcon(b, pkg, true); return b;
 }
-function getHidden(){ try { return JSON.parse(localStorage.getItem('hiddenApps') || '[]'); } catch(e){ return []; } }
-function saveHidden(h){ try { localStorage.setItem('hiddenApps', JSON.stringify(h)); } catch(e){} }
 function buildDock(){
   installed = J(A.apps()) || [];
   installed.forEach(a => labels[a.pkg] = a.label);
   const pins = getPinned();
   const row = $('row'); row.innerHTML = '';
-  const hid = getHidden();
-  pins.forEach(pkg => { if (labels[pkg] && !hid.includes(pkg)) row.appendChild(mkTile(pkg, false)); });
+  pins.forEach(pkg => { if (labels[pkg]) row.appendChild(mkTile(pkg, false)); });
   const mrow = $('mrow'); mrow.innerHTML = '';
   installed.forEach(a => { if (!a.label) a.label = a.pkg; labels[a.pkg] = a.label; });
-  if (CONFIG.showMore) installed.filter(a => a.pkg && !pins.includes(a.pkg) && !hid.includes(a.pkg)).sort((x, y) => String(x.label).localeCompare(String(y.label))).slice(0, 40)
+  if (CONFIG.showMore) installed.filter(a => a.pkg && !pins.includes(a.pkg)).sort((x, y) => String(x.label).localeCompare(String(y.label))).slice(0, 40)
     .forEach(a => { try { mrow.appendChild(mkTile(a.pkg, true)); } catch(e){} });
   $('mnone').textContent = installed.length ? T.noMore : T.noApps;
   $('mnone').classList.toggle('hide', mrow.children.length > 0);
@@ -660,8 +658,7 @@ function openAll(rep){
   installed.slice().sort((a,b)=>a.label.localeCompare(b.label)).forEach(a => {
     const b = document.createElement('button'); b.className = 'app f' + (pins.includes(a.pkg) ? ' pinned' : '');
     b.dataset.pkg = a.pkg;
-    const isH = getHidden().includes(a.pkg); if (isH) b.style.opacity = '.55';
-    b.innerHTML = '<div class="ph"></div><span>' + esc(a.label) + (isH ? ' · ' + T.hidden : '') + '</span><i class="pin"><span class="ck">' + svg('check') + '</span><span class="pl">' + svg('plus') + '</span></i>';
+    b.innerHTML = '<div class="ph"></div><span>' + esc(a.label) + '</span><i class="pin"><span class="ck">' + svg('check') + '</span><span class="pl">' + svg('plus') + '</span></i>';
     b.onclick = () => allMode ? doReplace(allMode, a.pkg) : togglePin(a.pkg, b);
     box.appendChild(b); loadIcon(b, a.pkg, false);
   });
@@ -686,10 +683,7 @@ function openCtx(t){
     it.push(['move', T.cMove, () => { closeCtx(true); startMove(t); }]);
     it.push(['trash', T.cRemove, () => { const p = getPinned(), i = p.indexOf(pkg); if (i >= 0) p.splice(i, 1); savePinned(); closeCtx(true); buildDock(); toast(T.removed + ' · ' + nm); const ts = [...$('row').children]; focusEl(ts[Math.min(i, ts.length - 1)] || $('libbtn')); }, 'dn']);
   } else it.push(['plus', T.cAdd, () => { getPinned().push(pkg); savePinned(); closeCtx(true); buildDock(); toast(T.added + ' · ' + nm); focusTile(pkg); }]);
-  const hs = getHidden(), isHid = hs.includes(pkg);
-  it.push([isHid ? 'eye' : 'eyeoff', isHid ? T.cUnhide : T.cHide, () => { const h = getHidden(), i = h.indexOf(pkg); if (i >= 0) h.splice(i, 1); else h.push(pkg); saveHidden(h); closeCtx(true); buildDock(); toast((i >= 0 ? T.shown : T.hidden) + ' · ' + nm); focusHome(); }]);
   it.push(['info', T.cInfo, () => { closeCtx(true); if (A.appInfo) A.appInfo(pkg); else A.settings('appinfo:' + pkg); }]);
-  it.push(['trash', T.cUninstall, () => { closeCtx(true); if (A.uninstall) A.uninstall(pkg); else if (A.appInfo) A.appInfo(pkg); else A.settings('appinfo:' + pkg); }, 'dn']);
   it.push(['home', T.cDefault, () => { closeCtx(true); if (A.setDefaultLauncher) A.setDefaultLauncher(); else A.settings('home'); }, 'sep']);
   const l = $('ctxl'); l.innerHTML = '';
   it.forEach(([ic, lb, fn, cls]) => { const b = document.createElement('button'); b.className = 'ctxi f ' + (cls || ''); b.innerHTML = '<span class="ci">' + svg(ic) + '</span><span>' + esc(lb) + '</span>'; b.onclick = fn; l.appendChild(b); });
