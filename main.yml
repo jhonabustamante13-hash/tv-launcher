@@ -1,0 +1,622 @@
+# Compila tu launcher de TV como APK usando GitHub (gratis, sin PC).
+# Cada vez que cambias index.html o este archivo, GitHub genera un APK nuevo.
+name: Compilar launcher
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Diagnóstico del index.html (muestra qué archivo hay en el repo)
+        run: |
+          echo "== Archivos en la raíz del repo =="
+          ls -la
+          echo "== Tamaño de index.html (el bueno pesa unos 540000 bytes) =="
+          wc -c index.html
+          echo "== Etiquetas script encontradas =="
+          grep -o '<script[^>]*>' index.html || echo "NINGUNA"
+          echo "== Primeros caracteres =="
+          head -c 200 index.html; echo
+
+      - name: Revisar que el JavaScript del launcher no tenga errores
+        run: |
+          cat > check.js <<'EOF_JS'
+          const t = require('fs').readFileSync('index.html', 'utf8');
+          const re = /<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g;
+          let m, n = 0;
+          while ((m = re.exec(t))) {
+            if (!m[1].trim()) continue;
+            n++;
+            try { new Function(m[1]); } catch (e) { console.error('Error de sintaxis en el script ' + n + ':', e.message); process.exit(1); }
+          }
+          if (!n) { console.error('No encontré ningún <script> con código en index.html. Tamaño del archivo: ' + t.length + ' caracteres'); process.exit(1); }
+          console.log('JavaScript OK (' + n + ' script)');
+          EOF_JS
+          node check.js
+          rm check.js
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Marcar la versión dentro del launcher
+        run: |
+          ls -la *.html
+          grep -q "__BUILD__" index.html || { echo "::error::El index.html de tu repo es la versión VIEJA. Sube el nuevo con el nombre exacto index.html (en la raíz)"; exit 1; }
+          sed -i "s/__BUILD__/v$GITHUB_RUN_NUMBER-${GITHUB_SHA::7}/" index.html
+
+      - name: Generar proyecto Android
+        run: |
+          set -e
+          mkdir -p android/app/src/main/assets android/app/src/main/java/com/tvlauncher
+          cat > android/settings.gradle <<'EOF_FILE'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "TVLauncher"
+          include ':app'
+          EOF_FILE
+          cat > android/build.gradle <<'EOF_FILE'
+          plugins {
+              id 'com.android.application' version '8.5.2' apply false
+              id 'org.jetbrains.kotlin.android' version '1.9.24' apply false
+          }
+          EOF_FILE
+          cat > android/gradle.properties <<'EOF_FILE'
+          org.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8
+          android.useAndroidX=false
+          EOF_FILE
+          cat > android/app/build.gradle <<'EOF_FILE'
+          plugins {
+              id 'com.android.application'
+              id 'org.jetbrains.kotlin.android'
+          }
+
+          android {
+              namespace 'com.tvlauncher'
+              compileSdk 34
+
+              defaultConfig {
+                  applicationId 'com.tvlauncher'
+                  minSdk 21
+                  targetSdk 34
+                  versionCode 1
+                  versionName '1.0'
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+              kotlinOptions {
+                  jvmTarget = '17'
+              }
+          }
+          EOF_FILE
+          cat > android/app/src/main/AndroidManifest.xml <<'EOF_FILE'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+              <uses-feature android:name="android.software.leanback" android:required="false" />
+              <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+              <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+
+              <application
+                  android:label="TV Launcher"
+                  android:theme="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen"
+                  android:hardwareAccelerated="true">
+
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:launchMode="singleTask"
+                      android:stateNotNeeded="true"
+                      android:resumeWhilePausing="true"
+                      android:configChanges="orientation|screenSize|keyboardHidden|keyboard|navigation|uiMode|screenLayout|smallestScreenSize|density">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.HOME" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                      </intent-filter>
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+
+                  <service
+                      android:name=".MediaListener"
+                      android:exported="true"
+                      android:label="TV Launcher música"
+                      android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+                      <intent-filter>
+                          <action android:name="android.service.notification.NotificationListenerService" />
+                      </intent-filter>
+                  </service>
+              </application>
+          </manifest>
+          EOF_FILE
+          cat > android/app/src/main/java/com/tvlauncher/MainActivity.kt <<'EOF_FILE'
+          package com.tvlauncher
+
+          import android.Manifest
+          import android.app.Activity
+          import android.app.ActivityManager
+          import android.app.role.RoleManager
+          import android.content.ComponentName
+          import android.content.Context
+          import android.content.Intent
+          import android.content.pm.PackageManager
+          import android.graphics.Bitmap
+          import android.graphics.Canvas
+          import android.graphics.Color
+          import android.graphics.drawable.Drawable
+          import android.media.MediaMetadata
+          import android.media.session.MediaController
+          import android.media.session.MediaSessionManager
+          import android.media.session.PlaybackState
+          import android.net.ConnectivityManager
+          import android.net.Uri
+          import android.net.wifi.WifiManager
+          import android.os.Build
+          import android.os.Bundle
+          import android.os.Environment
+          import android.os.StatFs
+          import android.os.SystemClock
+          import android.provider.Settings
+          import android.util.Base64
+          import android.view.KeyEvent
+          import android.webkit.JavascriptInterface
+          import android.webkit.WebChromeClient
+          import android.webkit.WebView
+          import android.webkit.WebViewClient
+          import org.json.JSONArray
+          import org.json.JSONObject
+          import java.io.ByteArrayOutputStream
+          import java.util.Locale
+
+          class MainActivity : Activity() {
+
+              private lateinit var web: WebView
+
+              override fun onCreate(savedInstanceState: Bundle?) {
+                  super.onCreate(savedInstanceState)
+                  web = WebView(this)
+                  web.setBackgroundColor(Color.BLACK)
+                  web.settings.javaScriptEnabled = true
+                  web.settings.domStorageEnabled = true
+                  web.settings.mediaPlaybackRequiresUserGesture = false
+                  web.webViewClient = WebViewClient()
+                  web.webChromeClient = WebChromeClient()
+                  web.addJavascriptInterface(Bridge(), "Android")
+                  setContentView(web)
+                  web.requestFocus()
+                  web.loadUrl("file:///android_asset/index.html")
+
+                  // Para poder leer el nombre del Wi-Fi
+                  if (Build.VERSION.SDK_INT >= 23 &&
+                      checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                  ) {
+                      requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+                  }
+              }
+
+              override fun onNewIntent(intent: Intent?) {
+                  super.onNewIntent(intent)
+                  // Se pulsó el botón Home estando ya dentro del launcher
+                  web.evaluateJavascript("window.onHome&&window.onHome()", null)
+              }
+
+              @Deprecated("Deprecated in Java")
+              override fun onBackPressed() {
+                  web.evaluateJavascript("window.onBack&&window.onBack()", null)
+              }
+
+                  // ---------- botones del control remoto (YouTube, Netflix, Prime, Disney+) ----------
+
+              @Volatile private var keyMap: Map<Int, String> = HashMap()
+              @Volatile private var learning = false
+              private var swallowUp = -1
+
+              private fun launchPkg(pkg: String): Boolean {
+                  val pm = packageManager
+                  val i = pm.getLeanbackLaunchIntentForPackage(pkg) ?: pm.getLaunchIntentForPackage(pkg) ?: return false
+                  startSafe(i)
+                  return true
+              }
+
+              private fun isNavKey(c: Int): Boolean = when (c) {
+                  KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT,
+                  KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER,
+                  KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_ESCAPE, KeyEvent.KEYCODE_HOME, KeyEvent.KEYCODE_MENU,
+                  KeyEvent.KEYCODE_POWER, KeyEvent.KEYCODE_TV_POWER,
+                  KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_MUTE -> true
+                  else -> false
+              }
+
+              override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+                  // algunos botones llegan como "desconocidos": se identifican por su scanCode
+                  val code = if (event.keyCode == KeyEvent.KEYCODE_UNKNOWN) 100000 + event.scanCode else event.keyCode
+                  if (event.action == KeyEvent.ACTION_UP && code == swallowUp) {
+                      swallowUp = -1
+                      return true
+                  }
+                  if (event.action == KeyEvent.ACTION_DOWN && !isNavKey(code)) {
+                      if (learning) {
+                          learning = false
+                          swallowUp = code
+                          web.post { web.evaluateJavascript("window.onLearn&&window.onLearn(" + code + ")", null) }
+                          return true
+                      }
+                      val pkg = keyMap[code]
+                      if (pkg != null) {
+                          swallowUp = code
+                          if (event.repeatCount == 0) launchPkg(pkg)
+                          return true
+                      }
+                  }
+                  return super.dispatchKeyEvent(event)
+              }
+
+              // ---------- ayudas ----------
+
+
+              private fun hasNotifAccess(): Boolean {
+                  val s = Settings.Secure.getString(contentResolver, "enabled_notification_listeners") ?: return false
+                  return s.contains(packageName)
+              }
+
+              private fun controller(): MediaController? {
+                  return try {
+                      val msm = getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
+                      val list = msm.getActiveSessions(ComponentName(this, MediaListener::class.java))
+                      list.firstOrNull { it.playbackState?.state == PlaybackState.STATE_PLAYING } ?: list.firstOrNull()
+                  } catch (e: Exception) {
+                      null
+                  }
+              }
+
+              private fun toDataUrl(bm: Bitmap, png: Boolean): String {
+                  val bos = ByteArrayOutputStream()
+                  if (png) bm.compress(Bitmap.CompressFormat.PNG, 100, bos)
+                  else bm.compress(Bitmap.CompressFormat.JPEG, 85, bos)
+                  val mime = if (png) "image/png" else "image/jpeg"
+                  return "data:" + mime + ";base64," + Base64.encodeToString(bos.toByteArray(), Base64.NO_WRAP)
+              }
+
+              private fun startSafe(i: Intent) {
+                  i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                  runOnUiThread {
+                      try {
+                          startActivity(i)
+                      } catch (e: Exception) {
+                      }
+                  }
+              }
+
+              // ---------- puente JavaScript <-> Android ----------
+
+              inner class Bridge {
+
+                  @JavascriptInterface
+                  fun apps(): String {
+                      val pm = packageManager
+                      val out = LinkedHashMap<String, String>()
+                      for (cat in listOf(Intent.CATEGORY_LEANBACK_LAUNCHER, Intent.CATEGORY_LAUNCHER)) {
+                          val i = Intent(Intent.ACTION_MAIN).addCategory(cat)
+                          for (ri in pm.queryIntentActivities(i, 0)) {
+                              val p = ri.activityInfo.packageName
+                              if (p == packageName) continue
+                              if (!out.containsKey(p)) out[p] = ri.loadLabel(pm).toString()
+                          }
+                      }
+                      val arr = JSONArray()
+                      for ((p, l) in out) {
+                          arr.put(JSONObject().put("pkg", p).put("label", l))
+                      }
+                      return arr.toString()
+                  }
+
+                  @JavascriptInterface
+                  fun icon(pkg: String): String {
+                      return try {
+                          val pm = packageManager
+                          var d: Drawable? = null
+                          try {
+                              val li = pm.getLeanbackLaunchIntentForPackage(pkg)
+                              if (li != null) d = pm.getActivityBanner(li)
+                          } catch (e: Exception) {
+                          }
+                          if (d == null) {
+                              try {
+                                  d = pm.getApplicationBanner(pkg)
+                              } catch (e: Exception) {
+                              }
+                          }
+                          val banner = d != null
+                          val drawable: Drawable = d ?: pm.getApplicationIcon(pkg)
+                          val w = if (banner) 320 else 192
+                          val h = if (banner) 180 else 192
+                          val bm = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                          val c = Canvas(bm)
+                          drawable.setBounds(0, 0, w, h)
+                          drawable.draw(c)
+                          JSONObject().put("banner", banner).put("data", toDataUrl(bm, true)).toString()
+                      } catch (e: Exception) {
+                          "{}"
+                      }
+                  }
+
+                  @JavascriptInterface
+                  fun launch(pkg: String): Boolean {
+                      val pm = packageManager
+                      val i = pm.getLeanbackLaunchIntentForPackage(pkg) ?: pm.getLaunchIntentForPackage(pkg) ?: return false
+                      startSafe(i)
+                      return true
+                  }
+
+                  @JavascriptInterface
+                  fun settings(kind: String) {
+                      if (kind == "search") {
+                          val i = pkgIntent("com.google.android.katniss") ?: Intent(Intent.ACTION_ASSIST)
+                          startSafe(i)
+                          return
+                      }
+                      val action = when (kind) {
+                          "wifi" -> Settings.ACTION_WIFI_SETTINGS
+                          "sound" -> Settings.ACTION_SOUND_SETTINGS
+                          "display" -> Settings.ACTION_DISPLAY_SETTINGS
+                          "access" -> Settings.ACTION_ACCESSIBILITY_SETTINGS
+                          "notif" -> "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"
+                          else -> Settings.ACTION_SETTINGS
+                      }
+                      val i = Intent(action)
+                      if (i.resolveActivity(packageManager) != null) {
+                          startSafe(i)
+                      } else {
+                          startSafe(pkgIntent("com.android.tv.settings") ?: Intent(Settings.ACTION_SETTINGS))
+                      }
+                  }
+
+                  private fun pkgIntent(pkg: String): Intent? {
+                      val pm = packageManager
+                      return pm.getLeanbackLaunchIntentForPackage(pkg) ?: pm.getLaunchIntentForPackage(pkg)
+                  }
+
+                  // Menú al mantener presionado una app: "Información de la app"
+                  @JavascriptInterface
+                  fun appInfo(pkg: String) {
+                      startSafe(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + pkg)))
+                  }
+
+                  // Menú al mantener presionado una app: "Launcher predeterminado"
+                  @JavascriptInterface
+                  fun setDefaultLauncher() {
+                      runOnUiThread {
+                          try {
+                              if (Build.VERSION.SDK_INT >= 29) {
+                                  val rm = getSystemService(RoleManager::class.java)
+                                  if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_HOME) && !rm.isRoleHeld(RoleManager.ROLE_HOME)) {
+                                      startActivityForResult(rm.createRequestRoleIntent(RoleManager.ROLE_HOME), 7)
+                                      return@runOnUiThread
+                                  }
+                              }
+                          } catch (e: Exception) {
+                          }
+                          val h = Intent(Settings.ACTION_HOME_SETTINGS)
+                          if (h.resolveActivity(packageManager) != null) {
+                              startSafe(h)
+                          } else {
+                              // Último recurso: Android muestra su selector de launcher
+                              startSafe(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME))
+                          }
+                      }
+                  }
+
+                          @JavascriptInterface
+                  fun setKeys(json: String) {
+                      try {
+                          val o = JSONObject(json)
+                          val m = HashMap<Int, String>()
+                          val ks = o.keys()
+                          while (ks.hasNext()) {
+                              val k = ks.next()
+                              m[k.toInt()] = o.getString(k)
+                          }
+                          keyMap = m
+                      } catch (e: Exception) {
+                      }
+                  }
+
+                  @JavascriptInterface
+                  fun learn(on: Boolean) {
+                      learning = on
+                  }
+
+                  @JavascriptInterface
+                  fun info(): String {
+                      val o = JSONObject()
+                      try {
+                          val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                          val mi = ActivityManager.MemoryInfo()
+                          am.getMemoryInfo(mi)
+                          o.put("ramFree", String.format(Locale.US, "%.1f", mi.availMem / 1073741824.0))
+                          val st = StatFs(Environment.getDataDirectory().path)
+                          o.put("storageFree", String.format(Locale.US, "%.1f", st.availableBytes / 1073741824.0))
+                      } catch (e: Exception) {
+                      }
+                      try {
+                          val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                          o.put("online", cm.activeNetworkInfo?.isConnected == true)
+                          val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                          var ssid = wm.connectionInfo?.ssid ?: ""
+                          ssid = ssid.trim('"')
+                          if (ssid == "<unknown ssid>") ssid = ""
+                          o.put("ssid", ssid)
+                      } catch (e: Exception) {
+                      }
+                      return o.toString()
+                  }
+
+                  @JavascriptInterface
+                  fun media(): String {
+                      val o = JSONObject()
+                      val access = hasNotifAccess()
+                      o.put("access", access)
+                      o.put("active", false)
+                      if (!access) return o.toString()
+                      val c = controller() ?: return o.toString()
+                      val md = c.metadata
+                      val st = c.playbackState
+                      val title = md?.getString(MediaMetadata.METADATA_KEY_TITLE) ?: ""
+                      if (title.isEmpty()) return o.toString()
+                      val artist = md?.getString(MediaMetadata.METADATA_KEY_ARTIST)
+                          ?: md?.getString(MediaMetadata.METADATA_KEY_ALBUM_ARTIST) ?: ""
+                      val playing = st != null && st.state == PlaybackState.STATE_PLAYING
+                      var pos = st?.position ?: 0L
+                      if (playing && st != null) {
+                          pos += ((SystemClock.elapsedRealtime() - st.lastPositionUpdateTime) * st.playbackSpeed).toLong()
+                      }
+                      val dur = md?.getLong(MediaMetadata.METADATA_KEY_DURATION) ?: 0L
+                      o.put("active", true)
+                      o.put("title", title)
+                      o.put("artist", artist)
+                      o.put("playing", playing)
+                      o.put("pos", pos)
+                      o.put("dur", dur)
+                      o.put("pkg", c.packageName)
+                      o.put("artKey", title + "|" + artist)
+                      return o.toString()
+                  }
+
+                  @JavascriptInterface
+                  fun mediaArt(): String {
+                      return try {
+                          val md = controller()?.metadata ?: return ""
+                          val bm = md.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
+                              ?: md.getBitmap(MediaMetadata.METADATA_KEY_ART)
+                              ?: md.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON)
+                              ?: return ""
+                          toDataUrl(Bitmap.createScaledBitmap(bm, 300, 300, true), false)
+                      } catch (e: Exception) {
+                          ""
+                      }
+                  }
+
+                  @JavascriptInterface
+                  fun mediaCmd(cmd: String) {
+                      val c = controller() ?: return
+                      val t = c.transportControls
+                      when (cmd) {
+                          "next" -> t.skipToNext()
+                          "prev" -> t.skipToPrevious()
+                          "toggle" -> {
+                              if (c.playbackState?.state == PlaybackState.STATE_PLAYING) t.pause() else t.play()
+                          }
+                      }
+                  }
+              }
+          }
+          EOF_FILE
+          cat > android/app/src/main/java/com/tvlauncher/MediaListener.kt <<'EOF_FILE'
+          package com.tvlauncher
+
+          import android.service.notification.NotificationListenerService
+
+          // Solo existe para que Android nos deje leer qué música suena (permiso "acceso a notificaciones").
+          class MediaListener : NotificationListenerService()
+          EOF_FILE
+          cp index.html android/app/src/main/assets/index.html
+          sed -i "s/versionCode 1$/versionCode $GITHUB_RUN_NUMBER/; s/versionName '1.0'/versionName '1.$GITHUB_RUN_NUMBER'/" android/app/build.gradle
+
+      - name: Usar siempre la misma firma (para actualizar sin desinstalar)
+        continue-on-error: true
+        run: |
+          mkdir -p ~/.android
+          base64 -d > ~/.android/debug.keystore <<'EOF_KEY'
+          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
+          EOF_KEY
+          keytool -list -keystore ~/.android/debug.keystore -storepass android > /dev/null || { echo "::warning::La llave no se pudo leer, se usará una temporal"; rm -f ~/.android/debug.keystore; }
+
+      - name: Compilar APK
+        working-directory: android
+        run: gradle assembleDebug --no-daemon --stacktrace
+
+      - name: Preparar APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk launcher.apk
+
+      - name: Publicar descarga
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Launcher v${{ github.run_number }}
+          body: Versión visible en la app (panel de control, abajo) - v${{ github.run_number }}
+          files: launcher.apk
+          make_latest: true
