@@ -16,13 +16,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Diagnóstico del index.html (muestra qué archivo hay en el repo)
+        run: |
+          echo "== Archivos en la raíz del repo =="
+          ls -la
+          echo "== Tamaño de index.html (el bueno pesa unos 540000 bytes) =="
+          wc -c index.html
+          echo "== Etiquetas script encontradas =="
+          grep -o '<script[^>]*>' index.html || echo "NINGUNA"
+          echo "== Primeros caracteres =="
+          head -c 200 index.html; echo
+
       - name: Revisar que el JavaScript del launcher no tenga errores
         run: |
-          node -e "
-          const m = require('fs').readFileSync('index.html', 'utf8').match(/<script>([\\s\\S]*)<\\/script>/);
-          if (!m) { console.error('No encontré el <script> en index.html'); process.exit(1); }
-          try { new Function(m[1]); console.log('JavaScript OK'); } catch (e) { console.error('Error de sintaxis:', e.message); process.exit(1); }
-          "
+          cat > check.js <<'EOF_JS'
+          const t = require('fs').readFileSync('index.html', 'utf8');
+          const re = /<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g;
+          let m, n = 0;
+          while ((m = re.exec(t))) {
+            if (!m[1].trim()) continue;
+            n++;
+            try { new Function(m[1]); } catch (e) { console.error('Error de sintaxis en el script ' + n + ':', e.message); process.exit(1); }
+          }
+          if (!n) { console.error('No encontré ningún <script> con código en index.html. Tamaño del archivo: ' + t.length + ' caracteres'); process.exit(1); }
+          console.log('JavaScript OK (' + n + ' script)');
+          EOF_JS
+          node check.js
+          rm check.js
 
       - uses: actions/setup-java@v4
         with:
@@ -418,29 +438,4 @@ jobs:
                               startSafe(h)
                           } else {
                               // Último recurso: Android muestra su selector de launcher
-                              startSafe(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME))
-                          }
-                      }
-                  }
-
-                          @JavascriptInterface
-                  fun setKeys(json: String) {
-                      try {
-                          val o = JSONObject(json)
-                          val m = HashMap<Int, String>()
-                          val ks = o.keys()
-                          while (ks.hasNext()) {
-                              val k = ks.next()
-                              m[k.toInt()] = o.getString(k)
-                          }
-                          keyMap = m
-                      } catch (e: Exception) {
-                      }
-                  }
-
-                  @JavascriptInterface
-                  fun learn(on: Boolean) {
-                      learning = on
-                  }
-
-   
+                              startSafe(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOM
