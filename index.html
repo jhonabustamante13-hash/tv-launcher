@@ -133,9 +133,49 @@ body.apptitle #np{opacity:0;pointer-events:none}
 .cb{width:3.2rem;height:3.2rem;border-radius:50%;border:.1rem solid var(--line);background:var(--glass);display:flex;align-items:center;justify-content:center;font-size:1.3rem}
 .cb svg{stroke:none;fill:currentColor}
 .f:focus.cb svg{fill:#10131c}
-.listen{display:flex;align-items:center;gap:.7rem;height:3.4rem;padding:0 1.8rem;border-radius:2rem;background:#fff;color:#10131c;font-size:1.25rem;font-weight:500}
-.listen svg{stroke:#10131c}
-.listen:focus{box-shadow:0 0 0 .3rem rgba(255,255,255,.55)}
+.listen{display:flex;align-items:center;gap:.7rem;height:3.4rem;padding:0 1.8rem;border-radius:2rem;font-size:1.25rem;font-weight:500;color:#fff;
+  background:linear-gradient(135deg,rgba(255,255,255,.3),rgba(255,255,255,.07) 50%,rgba(255,255,255,.18));border:.1rem solid rgba(255,255,255,.42);
+  box-shadow:inset 0 .15rem .25rem rgba(255,255,255,.6),inset 0 -.12rem .25rem rgba(255,255,255,.15),0 .5rem 1.4rem rgba(0,0,0,.25);
+  -webkit-backdrop-filter:blur(.8rem) saturate(1.7);backdrop-filter:blur(.8rem) saturate(1.7);text-shadow:0 .1rem .4rem rgba(0,0,0,.35)}
+.listen svg{stroke:#fff}
+.listen:focus{box-shadow:0 0 1.4rem rgba(255,255,255,.4)}
+
+/* ---------- Reproductor (cristal líquido) ---------- */
+#plo{position:fixed;inset:0;z-index:14;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(.6rem);backdrop-filter:blur(.6rem);
+  visibility:hidden;opacity:0;transition:opacity .25s,visibility 0s .25s}
+#plo.open{visibility:visible;opacity:1;transition:opacity .25s}
+#pl{position:relative;isolation:isolate;overflow:hidden;width:70rem;padding:3rem 3.2rem 2.6rem;border-radius:3.4rem;color:#fff;text-shadow:0 .1rem .6rem rgba(0,0,0,.35);
+  transform:scale(.93) translateY(1.5rem);transition:transform .45s cubic-bezier(.2,.9,.3,1.15)}
+#plo.open #pl{transform:none}
+#pl::before{content:"";position:absolute;left:5%;right:5%;top:.2rem;height:30%;border-radius:3rem 3rem 60% 60%/3rem 3rem 100% 100%;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0));pointer-events:none;z-index:1}
+#plBg{position:absolute;left:-6rem;top:-6rem;width:calc(100% + 12rem);height:calc(100% + 12rem);object-fit:cover;filter:blur(3rem) saturate(1.8);opacity:.6;z-index:-1}
+#plBg:not([src]),#plArt:not([src]){visibility:hidden}
+#pl .plmain{position:relative;z-index:2;display:flex;gap:3rem;align-items:center}
+#plArt{width:17rem;height:17rem;flex:none;border-radius:2.2rem;object-fit:cover;background:var(--glass2);border:.1rem solid rgba(255,255,255,.45);box-shadow:0 1.2rem 3rem rgba(0,0,0,.5)}
+#pl .plinfo{flex:1;min-width:0}
+#plTtl{font-size:3rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#plArtist{font-size:1.5rem;color:rgba(255,255,255,.8);margin:.3rem 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#plBar{display:flex;align-items:center;gap:1rem;margin:1.8rem 0 1.6rem;font-size:1.1rem;color:rgba(255,255,255,.8)}
+#plBar .trk{flex:1;height:.4rem;border-radius:.3rem;background:rgba(255,255,255,.25);overflow:hidden}
+#plBar .trk i{display:block;height:100%;width:0;background:#fff;border-radius:.3rem;transition:width .9s linear}
+#pl .plctl{display:flex;gap:1.2rem;align-items:center}
+.pb{position:relative;width:5rem;height:5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#fff;
+  background:linear-gradient(135deg,rgba(255,255,255,.3),rgba(255,255,255,.07) 50%,rgba(255,255,255,.18));border:.1rem solid rgba(255,255,255,.45);
+  box-shadow:inset 0 .18rem .3rem rgba(255,255,255,.65),inset 0 -.15rem .3rem rgba(255,255,255,.18),0 .6rem 1.6rem rgba(0,0,0,.3);transition:background .15s,transform .15s}
+.pb.big{width:6.2rem;height:6.2rem;font-size:2.2rem}
+.pb svg{stroke:none;fill:currentColor}
+.pb.open{width:auto;border-radius:3rem;padding:0 2rem;gap:.8rem;font-size:1.3rem;font-weight:500;margin-left:auto;height:4.6rem}
+.pb.open svg{stroke:currentColor;fill:none}
+#pl .f:focus{background:linear-gradient(135deg,rgba(255,255,255,.55),rgba(255,255,255,.2) 55%,rgba(255,255,255,.38))!important;color:#fff!important;transform:scale(1.1);
+  box-shadow:inset 0 .2rem .35rem rgba(255,255,255,.95),inset 0 -.2rem .4rem rgba(255,255,255,.4),0 0 1.6rem rgba(255,255,255,.4),0 .9rem 2.2rem rgba(0,0,0,.35)}
+#pl .f:focus.pb svg{fill:#fff;stroke:none}
+#pl .f:focus.pb.open svg{stroke:#fff;fill:none}
+#plQ{position:relative;z-index:2;margin-top:2.2rem;padding-top:1.4rem;border-top:.08rem solid rgba(255,255,255,.25)}
+#plQh{font-size:1.1rem;letter-spacing:.12rem;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:.7rem}
+#plQl .qi{display:flex;gap:1.2rem;align-items:baseline;height:2.7rem;font-size:1.3rem;white-space:nowrap}
+#plQl .qi b{width:1.8rem;font-weight:500;color:rgba(255,255,255,.55)}
+#plQl .qi span{overflow:hidden;text-overflow:ellipsis}
+#plQl .qi small{margin-left:auto;font-size:1.1rem;color:rgba(255,255,255,.65);overflow:hidden;text-overflow:ellipsis;max-width:40%}
 #bar{display:flex;align-items:center;gap:1rem;margin-top:1.4rem;font-size:1.1rem;color:var(--dim)}
 #bar .trk{flex:1;height:.28rem;border-radius:.2rem;background:rgba(255,255,255,.25);overflow:hidden}
 #bar .trk i{display:block;height:100%;width:0;background:#fff}
@@ -155,7 +195,7 @@ body.apptitle #np{opacity:0;pointer-events:none}
 .tile.banner .tl{display:none}
 .tile.f:focus{width:12.8rem;height:7.2rem;transform:none;background:rgba(20,24,40,.96)!important;color:#fff!important;
   border:.1rem solid rgb(var(--tc,255,255,255));
-  box-shadow:0 0 1.1rem .05rem rgba(var(--tc,255,255,255),.55);animation:jelly .5s cubic-bezier(.3,1.5,.5,1)}
+  box-shadow:0 0 1.1rem .05rem rgba(var(--tc,255,255,255),.55)}
 .tile.f:focus .tl{color:#fff}
 .tile{--tc:255,255,255}
 .tile.allapps{width:7rem}
@@ -258,10 +298,9 @@ body.apptitle #apptitle{opacity:1}
 
 /* ---------- Selector de cristal líquido ---------- */
 .lens{position:absolute;left:0;top:0;z-index:5;pointer-events:none;opacity:0;transition:opacity .2s;border-radius:1.4rem;
-  background:linear-gradient(135deg,rgba(255,255,255,.32),rgba(255,255,255,.04) 50%,rgba(255,255,255,.2));
-  border:.1rem solid rgba(255,255,255,.75);
-  box-shadow:inset 0 .12rem .25rem rgba(255,255,255,.7),inset 0 -.1rem .3rem rgba(var(--tc,255,255,255),.5),0 0 1.4rem rgba(var(--tc,255,255,255),.55);
-  -webkit-backdrop-filter:blur(.25rem) saturate(1.6);backdrop-filter:blur(.25rem) saturate(1.6)}
+  background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,0) 45%,rgba(255,255,255,.06));
+  border:.1rem solid rgba(255,255,255,.8);
+  box-shadow:inset 0 .08rem .12rem rgba(255,255,255,.45),0 0 1.4rem rgba(var(--tc,255,255,255),.55)}
 .lens::after{content:"";position:absolute;inset:-.25rem;border-radius:1.6rem;border:.08rem solid rgba(255,255,255,.32)}
 .lens.on{opacity:1}
 
@@ -286,6 +325,75 @@ body.apptitle #apptitle{opacity:1}
 
 #toast{position:fixed;left:50%;bottom:2rem;transform:translateX(-50%);background:rgba(0,0,0,.8);padding:.7rem 1.6rem;border-radius:1.4rem;font-size:1.1rem;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none}
 #toast.on{opacity:1}
+
+/* ---------- Cristal líquido v2: transparente y nítido (sin desenfoque de fondo) ---------- */
+.tile.f:focus{background:rgba(255,255,255,.05)!important;border:.1rem solid rgba(255,255,255,.0);box-shadow:none}
+.tile.f.moving:focus{box-shadow:0 1.2rem 2rem rgba(0,0,0,.4)}
+.lens{border-radius:1.5rem;border:.12rem solid rgba(255,255,255,.6);
+  background:linear-gradient(135deg,rgba(255,255,255,.26) 0%,rgba(255,255,255,.03) 34%,rgba(255,255,255,0) 60%,rgba(255,255,255,.2) 100%);
+  box-shadow:inset 0 .2rem .35rem rgba(255,255,255,.85),inset 0 -.2rem .4rem rgba(255,255,255,.42),inset .18rem 0 .3rem rgba(255,255,255,.3),inset -.18rem 0 .3rem rgba(255,255,255,.3),
+             0 .8rem 2rem rgba(0,0,0,.35),0 0 1.4rem rgba(var(--tc,255,255,255),.5);
+  -webkit-backdrop-filter:saturate(1.7) brightness(1.12);backdrop-filter:saturate(1.7) brightness(1.12)}
+.lens::before{content:"";position:absolute;left:6%;right:6%;top:.2rem;height:38%;border-radius:1.3rem 1.3rem 60% 60%/1.3rem 1.3rem 100% 100%;
+  background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,0));pointer-events:none}
+.lens::after{border:.08rem solid rgba(255,255,255,.4)}
+
+/* menú de la app: fondo de atrás nítido y menú transparente */
+#ctxo,#wxo{background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+#ctx{background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.30),rgba(255,255,255,0) 55%),linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.02) 50%,rgba(255,255,255,.10)),rgba(8,12,26,.22);
+  border:.1rem solid rgba(255,255,255,.5);
+  box-shadow:inset 0 .2rem .35rem rgba(255,255,255,.75),inset 0 -.2rem .4rem rgba(255,255,255,.3),0 1.4rem 3rem rgba(0,0,0,.35);
+  -webkit-backdrop-filter:saturate(1.6) brightness(1.08);backdrop-filter:saturate(1.6) brightness(1.08)}
+.ctxi{text-shadow:0 .1rem .5rem rgba(0,0,0,.45)}
+.ctxi.f:focus{background:linear-gradient(135deg,rgba(255,255,255,.36),rgba(255,255,255,.12))!important;color:#fff!important;
+  box-shadow:inset 0 .12rem .22rem rgba(255,255,255,.8),inset 0 -.1rem .2rem rgba(255,255,255,.3),0 0 1rem rgba(255,255,255,.2)}
+.ctxi.f:focus svg{stroke:#fff}
+.ctxi.dn.f:focus{color:#ffc4c4!important}
+.ctxi.dn.f:focus svg{stroke:#ffc4c4}
+
+/* ---------- Centro de control: cristal líquido ---------- */
+#panel .card,#panel .rb,#panel #ram,#panel .qb{
+  background:linear-gradient(135deg,rgba(255,255,255,.25) 0%,rgba(255,255,255,.05) 46%,rgba(255,255,255,.13) 100%);
+  border:.1rem solid rgba(255,255,255,.42);
+  box-shadow:inset 0 .18rem .3rem rgba(255,255,255,.7),inset 0 -.18rem .35rem rgba(255,255,255,.22),0 .8rem 2rem rgba(0,0,0,.3);
+  -webkit-backdrop-filter:blur(.8rem) saturate(1.8) brightness(1.08);backdrop-filter:blur(.8rem) saturate(1.8) brightness(1.08);
+  text-shadow:0 .1rem .5rem rgba(0,0,0,.35)}
+#panel .card::before,#panel .rb::before{content:"";position:absolute;left:8%;right:8%;top:.15rem;height:38%;border-radius:inherit;
+  background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0));pointer-events:none}
+#panel .card,#panel .rb{position:relative}
+#panel .f:focus{background:linear-gradient(135deg,rgba(255,255,255,.52),rgba(255,255,255,.18) 55%,rgba(255,255,255,.36))!important;color:#fff!important;transform:scale(1.04);
+  box-shadow:inset 0 .2rem .35rem rgba(255,255,255,.95),inset 0 -.2rem .4rem rgba(255,255,255,.4),0 0 1.4rem rgba(255,255,255,.35),0 .9rem 2.2rem rgba(0,0,0,.35)}
+#panel .f:focus svg{stroke:#fff}
+#panel .f:focus.card small{color:rgba(255,255,255,.88)}
+#panel .card .ci{background:rgba(255,255,255,.2);box-shadow:inset 0 .1rem .18rem rgba(255,255,255,.6)}
+#panel .f:focus .ci{background:rgba(255,255,255,.34)}
+#panel #pmedia img{box-shadow:0 .3rem .9rem rgba(0,0,0,.35)}
+#qrow{grid-column:span 2;display:flex;gap:.9rem}
+.qb{position:relative;flex:1;height:4.9rem;border-radius:1.5rem;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.05rem;font-weight:600;transition:background .15s,transform .15s}
+.qb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.qb.icon img{position:static;width:3rem;height:3rem;border-radius:.7rem}
+.qb.banner .ql,.qb.icon .ql{display:none}
+.qb.dim{opacity:.45}
+.qb::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0) 48%);pointer-events:none}
+#cKeys{grid-column:span 2}
+
+/* botones del control remoto */
+#kso{position:fixed;inset:0;z-index:15;background:transparent;visibility:hidden;opacity:0;transition:opacity .2s,visibility 0s .2s}
+#kso.open{visibility:visible;opacity:1;transition:opacity .2s}
+#ks{position:absolute;left:50%;top:50%;width:40rem;padding:1.2rem;border-radius:2.6rem;transform:translate(-50%,-50%);
+  background:radial-gradient(120% 70% at 15% 0%,rgba(255,255,255,.30),rgba(255,255,255,0) 55%),linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.02) 50%,rgba(255,255,255,.10)),rgba(8,12,26,.22);
+  border:.1rem solid rgba(255,255,255,.5);
+  box-shadow:inset 0 .2rem .35rem rgba(255,255,255,.75),inset 0 -.2rem .4rem rgba(255,255,255,.3),0 1.4rem 3rem rgba(0,0,0,.35);
+  -webkit-backdrop-filter:saturate(1.6) brightness(1.08);backdrop-filter:saturate(1.6) brightness(1.08)}
+#ksH{font-size:1.15rem;color:rgba(255,255,255,.8);padding:0 .9rem .7rem;text-shadow:0 .1rem .4rem rgba(0,0,0,.45)}
+.kv{margin-left:auto;font-size:1.05rem;opacity:.8}
+#ksl.learning .ctxi{opacity:.45}
+
+/* al abrir el centro de control, el inicio se atenúa para que el cristal se lea limpio */
+#dock,#more,#np,#apptitle,#libbtn{transition-property:opacity,bottom,height}
+body.panelopen #dock,body.panelopen #more,body.panelopen #libbtn{opacity:.18!important}
+body.panelopen #np,body.panelopen #apptitle{opacity:0!important}
+body.ksopen #panel{opacity:0!important;visibility:hidden!important}
 </style>
 </head>
 <body>
@@ -322,7 +430,7 @@ body.apptitle #apptitle{opacity:1}
         <button class="cb f" data-cmd="prev"><span data-i="prev"></span></button>
         <button class="cb f" data-cmd="toggle"><span id="ppIcon"></span></button>
         <button class="cb f" data-cmd="next"><span data-i="next"></span></button>
-        <button class="listen f" id="bListen"><span data-i="headphones"></span><span id="lListen"></span></button>
+        <button class="listen f" id="bListen"><span data-i="playlist"></span><span id="lListen"></span></button>
       </div>
     </div>
   </div>
@@ -349,9 +457,28 @@ body.apptitle #apptitle{opacity:1}
       <button class="rb f" id="rDisplay"><span data-i="display"></span></button>
       <button class="rb f" id="rSet"><span data-i="gear"></span></button>
     </div>
+    <button class="card f" id="cKeys"><span class="ci" data-i="remote"></span><span class="ct"><b id="tKeys"></b><small id="sKeys"></small></span></button>
   </div>
   <div id="ram"></div>
 </aside>
+
+<div id="plo"><div id="pl" class="glass">
+  <img id="plBg" alt="">
+  <div class="plmain">
+    <img id="plArt" alt="">
+    <div class="plinfo">
+      <div id="plTtl"></div><div id="plArtist"></div>
+      <div id="plBar"><span id="plPos">0:00</span><div class="trk"><i id="plFill"></i></div><span id="plDur">0:00</span></div>
+      <div class="plctl">
+        <button class="pb f" data-cmd="prev"><span data-i="prev"></span></button>
+        <button class="pb big f" id="plPPb" data-cmd="toggle"><span id="plPP"></span></button>
+        <button class="pb f" data-cmd="next"><span data-i="next"></span></button>
+        <button class="pb open f" id="plOpen"><span data-i="headphones"></span><span id="plOpenL"></span></button>
+      </div>
+    </div>
+  </div>
+  <div id="plQ" class="hide"><div id="plQh"></div><div id="plQl"></div></div>
+</div></div>
 
 <div id="wxo"><div id="wxcard" class="glass">
   <div class="top">
@@ -365,6 +492,7 @@ body.apptitle #apptitle{opacity:1}
 <div id="big"><div id="bigtime"></div><div id="bigdate"></div></div>
 <div id="saver"><div id="saverHint" class="glass"></div></div>
 <div id="toast"></div>
+<div id="kso"><div id="ks"><div class="ctxh"><b id="ksT"></b></div><div id="ksH"></div><div id="ksl"></div></div></div>
 <div id="ctxo"><div id="ctx"><div class="ctxh"><img id="ctxI" alt=""><b id="ctxN"></b></div><div id="ctxl"></div></div></div>
 <svg id="defs" aria-hidden="true"><filter id="goo" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b"/><feColorMatrix in="b" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -8"/></filter></svg>
 
@@ -394,14 +522,14 @@ const CONFIG = {
 CONFIG.showMore = true;    // false = oculta la fila de apps secundarias bajo el dock
 const WALLPAPERS = ['stars', 'drive', 'aurora'];
 const STR = {
-  es: { saverHint:'Haz clic para salir', cReplace:'Reemplazar por otra app', cMove:'Mover', cRemove:'Quitar del inicio', cAdd:'Agregar al inicio', cInfo:'Información de la app', cDefault:'Launcher predeterminado', moveHint:'◀ ▶ para mover · OK para terminar', replaceT:n=>'Reemplazar '+n+' por…', replaceHint:'Elige la app que tomará su lugar', replaced:'Reemplazada', lastOpen:'Abierta por última vez', never:'Aún no la abres desde aquí', today:'Hoy', yest:'Ayer', noMore:'Todas tus apps están en el inicio', noApps:'No se pudo leer la lista de apps del sistema', lib:'Biblioteca de aplicaciones', libHint:'Selecciona una app para agregarla o quitarla del inicio', added:'Agregada al inicio', removed:'Quitada del inicio',
+  es: { saverHint:'Haz clic para salir', cReplace:'Reemplazar por otra app', cMove:'Mover', cRemove:'Quitar del inicio', cAdd:'Agregar al inicio', cInfo:'Información de la app', cDefault:'Launcher predeterminado', moveHint:'◀ ▶ mover · ▲ ▼ cambiar de fila · OK para terminar', toMore:'Pasó a las secundarias', toMain:'Pasó a las principales', replaceT:n=>'Reemplazar '+n+' por…', replaceHint:'Elige la app que tomará su lugar', replaced:'Reemplazada', lastOpen:'Abierta por última vez', never:'Aún no la abres desde aquí', today:'Hoy', yest:'Ayer', noMore:'Todas tus apps están en el inicio', noApps:'No se pudo leer la lista de apps del sistema', lib:'Biblioteca de aplicaciones', libHint:'Selecciona una app para agregarla o quitarla del inicio', added:'Agregada al inicio', removed:'Quitada del inicio',
         store:'Tienda', wifi:'Wi-Fi', audio:'Audio', speakers:'Altavoces TV', clock:'Reloj', startNow:'Iniciar',
-        wall:'Fondo', listen:'Escuchar', allApps:'Todas las apps', nothing:'Nada reproduciendo',
+        wall:'Fondo', listen:'Reproductor', openApp:n=>'Abrir ' + n, upNext:'A continuación', allApps:'Todas las apps', nothing:'Nada reproduciendo',
         enableMedia:'Toca para activar la música', ramTxt:(r,s)=>r+' GB RAM · '+s+' GB libres', connected:'Conectado',
         offline:'Sin conexión', wp:{stars:'Noche',drive:'Noche de carretera',aurora:'Aurora'} },
-  en: { saverHint:'Click to exit', cReplace:'Replace with another app', cMove:'Move', cRemove:'Remove from home', cAdd:'Add to home', cInfo:'App info', cDefault:'Set as default launcher', moveHint:'◀ ▶ to move · OK to finish', replaceT:n=>'Replace '+n+' with…', replaceHint:'Pick the app that will take its place', replaced:'Replaced', lastOpen:'Last opened', never:'Not opened from here yet', today:'Today', yest:'Yesterday', noMore:'All your apps are on home', noApps:'Could not read the system app list', lib:'App library', libHint:'Select an app to add it to or remove it from home', added:'Added to home', removed:'Removed from home',
+  en: { saverHint:'Click to exit', cReplace:'Replace with another app', cMove:'Move', cRemove:'Remove from home', cAdd:'Add to home', cInfo:'App info', cDefault:'Set as default launcher', moveHint:'◀ ▶ move · ▲ ▼ switch row · OK to finish', toMore:'Moved to secondary apps', toMain:'Moved to main apps', replaceT:n=>'Replace '+n+' with…', replaceHint:'Pick the app that will take its place', replaced:'Replaced', lastOpen:'Last opened', never:'Not opened from here yet', today:'Today', yest:'Yesterday', noMore:'All your apps are on home', noApps:'Could not read the system app list', lib:'App library', libHint:'Select an app to add it to or remove it from home', added:'Added to home', removed:'Removed from home',
         store:'Store', wifi:'Wi-Fi', audio:'Audio', speakers:'TV speakers', clock:'Clock', startNow:'Start now',
-        wall:'Wallpaper', listen:'Listen', allApps:'All apps', nothing:'Nothing playing',
+        wall:'Wallpaper', listen:'Player', openApp:n=>'Open ' + n, upNext:'Up next', allApps:'All apps', nothing:'Nothing playing',
         enableMedia:'Tap to enable music', ramTxt:(r,s)=>r+' GB RAM · '+s+' GB storage free', connected:'Connected',
         offline:'Offline', wp:{stars:'Night',drive:'Night drive',aurora:'Aurora'} }
 };
@@ -416,14 +544,15 @@ const mock = {
   icon:p=>{const c=document.createElement('canvas');c.width=320;c.height=180;const g=c.getContext('2d');const hs={'com.google.android.youtube.tv':'#ff0000','com.stremio.one':'#6b4cff','com.netflix.ninja':'#e50914','com.disney.disneyplus':'#0b5fff','com.spotify.tv.android':'#1db954'};g.fillStyle='#fff';g.fillRect(0,0,320,180);g.fillStyle=hs[p]||'#f0a020';g.fillRect(60,50,200,80);return JSON.stringify({banner:true,data:c.toDataURL()})}, launch:p=>{toast('Abrir '+p);return true}, settings:k=>toast('Ajustes: '+k),
   info:()=>JSON.stringify({ssid:'MiWiFi',online:true,ramFree:'1.1',storageFree:'22.6'}),
   media:()=>JSON.stringify({access:true,active:true,title:'(madness) !',artist:'LUCKI',playing:true,pos:42000,dur:190000,artKey:'k'}),
-  mediaArt:()=>'', mediaCmd:c=>toast('Media: '+c)
+  mediaArt:()=>'', mediaCmd:c=>toast('Media: '+c),
+  mediaQueue:()=>JSON.stringify([{title:'Sky High',artist:'LUCKI'},{title:'Lost Track',artist:'Drake'},{title:'Night Drive',artist:'Kali Uchis'}])
 };
 const BUILD = '__BUILD__';   // lo rellena GitHub al compilar; se ve en el panel de control
 const A = window.Android || mock;
 const J = s => { try { return JSON.parse(s); } catch (e) { return null; } };
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let toastT; function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'),1800); }
+let toastT; function toast(m, ms){ const t=$('toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('on'), ms || 1800); }
 
 /* ---------- Iconos ---------- */
 const IC = {
@@ -437,6 +566,7 @@ const IC = {
   speaker:'<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9a4 4 0 010 6"/>',
   moon:'<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/>',
   image:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M4 18l5-5 4 4 3-3 4 4"/>',
+  playlist:'<path d="M4 7h10M4 12h9M4 17h6"/><path d="M18 15V6l3 1"/><circle cx="16" cy="16" r="2"/>',
   headphones:'<path d="M4 15v-3a8 8 0 0116 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/>',
   grid:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
   prev:'<path d="M7 5h2v14H7zM19 5v14L10 12z"/>',
@@ -577,6 +707,7 @@ function loadIcon(el, pkg, big){
     }
   }, 0);
 }
+IC.remote='<rect x="8" y="2.5" width="8" height="19" rx="4"/><circle cx="12" cy="8" r="1.4"/><path d="M10.5 13h3M10.5 16.5h3"/>';
 IC.swap='<path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/>'; IC.move='<path d="M12 3v18M3 12h18M8 7l4-4 4 4M8 17l4 4 4-4M7 8l-4 4 4 4M17 8l4 4-4 4"/>';
 IC.trash='<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'; IC.info='<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>'; IC.home='<path d="M4 11l8-7 8 7M6 10v10h12V10"/>';
 IC.check='<path d="M5 12.5l4.5 4.5L19 7.5"/>'; IC.plus='<path d="M12 5v14M5 12h14"/>';
@@ -588,6 +719,13 @@ function getPinned(){
   return pinnedPk = Array.isArray(st) ? st : CONFIG.pinned.map(p => p[0]);
 }
 function savePinned(){ try { localStorage.setItem('pinnedApps', JSON.stringify(pinnedPk)); } catch(e){} }
+let moreOrderPk = null;
+function getMoreOrder(){
+  if (moreOrderPk) return moreOrderPk;
+  let st = null; try { st = JSON.parse(localStorage.getItem('moreOrder')); } catch(e){}
+  return moreOrderPk = Array.isArray(st) ? st : [];
+}
+function saveMore(){ try { localStorage.setItem('moreOrder', JSON.stringify(getMoreOrder())); } catch(e){} }
 let lastOpen = {};
 try { lastOpen = JSON.parse(localStorage.getItem('lastOpen')) || {}; } catch(e){}
 function markOpen(pkg){ lastOpen[pkg] = Date.now(); try { localStorage.setItem('lastOpen', JSON.stringify(lastOpen)); } catch(e){} }
@@ -633,11 +771,12 @@ function buildDock(){
   pins.forEach(pkg => { if (labels[pkg]) row.appendChild(mkTile(pkg, false)); });
   const mrow = $('mrow'); mrow.innerHTML = '';
   installed.forEach(a => { if (!a.label) a.label = a.pkg; labels[a.pkg] = a.label; });
-  if (CONFIG.showMore) installed.filter(a => a.pkg && !pins.includes(a.pkg)).sort((x, y) => String(x.label).localeCompare(String(y.label))).slice(0, 40)
+  if (CONFIG.showMore) installed.filter(a => a.pkg && !pins.includes(a.pkg)).sort((x, y) => { const mo = getMoreOrder(), i = mo.indexOf(x.pkg), j = mo.indexOf(y.pkg); return i >= 0 && j >= 0 ? i - j : i >= 0 ? -1 : j >= 0 ? 1 : String(x.label).localeCompare(String(y.label)); }).slice(0, 40)
     .forEach(a => { try { mrow.appendChild(mkTile(a.pkg, true)); } catch(e){} });
   $('mnone').textContent = installed.length ? T.noMore : T.noApps;
   $('mnone').classList.toggle('hide', mrow.children.length > 0);
   $('more').classList.toggle('hide', !CONFIG.showMore);
+  buildQuick();
 }
 function focusHome(){ focusEl($('row').querySelector('.f') || $('mrow').querySelector('.f') || $('libbtn')); }
 function togglePin(pkg, el){
@@ -672,35 +811,114 @@ function doReplace(old, nw){
   closeAll(); focusTile(nw);
 }
 
+
+/* ---------- Acciones rápidas (centro de control) y botones del control remoto ---------- */
+const K = CONFIG.lang === 'en'
+  ? { keysT:'Remote buttons', keysS:'Assign YouTube, Netflix…', hint:'Pick an app, then press the button on your remote', press:n=>'Now press the '+n+' button on your remote…', btn:'Button', none:'Not set', ready:'All buttons ready', firstRun:'Tip: set up your remote buttons in Control Center → Remote buttons', clear:'Clear all', saved:'Button saved', notInst:'is not installed' }
+  : { keysT:'Botones del control', keysS:'Asigna YouTube, Netflix…', hint:'Elige una app y luego presiona el botón de tu control', press:n=>'Ahora presiona el botón de '+n+' en tu control…', btn:'Botón', none:'Sin asignar', ready:'Todos los botones listos', firstRun:'Tip: configura los botones de tu control en Centro de control → Botones del control', clear:'Borrar todos', saved:'Botón guardado', notInst:'no está instalada' };
+const QUICK = [
+  {id:'youtube', name:'YouTube',     pkg:['com.google.android.youtube.tv','com.google.android.youtube.tvunplugged']},
+  {id:'netflix', name:'Netflix',     pkg:['com.netflix.ninja','com.netflix.mediaclient']},
+  {id:'prime',   name:'Prime Video', pkg:['com.amazon.amazonvideo.livingroom','com.amazon.avod.thirdpartyclient','com.amazon.avod']},
+  {id:'disney',  name:'Disney+',     pkg:['com.disney.disneyplus','com.disney.disneyplus.tv']}
+];
+const qPkg = q => [].concat(q.pkg).find(p => labels[p]) || null;
+$('tKeys').textContent = K.keysT; $('sKeys').textContent = K.keysS;
+let qkeys = {}; try { qkeys = JSON.parse(localStorage.getItem('qkeys')) || {}; } catch(e){}
+function pushKeys(){
+  const m = {}; QUICK.forEach(q => { const p = qPkg(q); if (qkeys[q.id] && p) m[qkeys[q.id]] = p; });
+  try { A.setKeys && A.setKeys(JSON.stringify(m)); } catch(e){}
+}
+function saveKeys(){ try { localStorage.setItem('qkeys', JSON.stringify(qkeys)); } catch(e){} pushKeys(); updateKeysSub(); }
+function updateKeysSub(){
+  const n = QUICK.filter(q => qkeys[q.id]).length;
+  $('sKeys').textContent = n === QUICK.length ? K.ready : (n ? n + '/' + QUICK.length + ' · ' : '') + K.keysS;
+}
+function buildQuick(){ pushKeys(); updateKeysSub(); }   // solo envía los botones del control a Android (ya no hay apps en el panel)
+let learnId = null;
+function renderKeys(){
+  const l = $('ksl'); l.innerHTML = ''; l.classList.toggle('learning', !!learnId);
+  $('ksT').textContent = K.keysT;
+  QUICK.forEach(q => {
+    const b = document.createElement('button'); b.className = 'ctxi f';
+    b.innerHTML = '<span class="ci">' + svg('remote') + '</span><span>' + esc(q.name) + '</span><small class="kv">' + (qkeys[q.id] ? esc(K.btn) + ' ' + qkeys[q.id] : esc(K.none)) + '</small>';
+    b.onclick = () => startLearn(q); l.appendChild(b);
+  });
+  if (Object.keys(qkeys).length) {
+    const c = document.createElement('button'); c.className = 'ctxi f dn sep';
+    c.innerHTML = '<span class="ci">' + svg('trash') + '</span><span>' + esc(K.clear) + '</span>';
+    c.onclick = () => { qkeys = {}; saveKeys(); renderKeys(); focusEl($('ksl').firstChild); }; l.appendChild(c);
+  }
+}
+function openKeys(){ learnId = null; $('ksH').textContent = K.hint; renderKeys(); $('kso').classList.add('open'); focusEl($('ksl').firstChild); }
+function startLearn(q){ learnId = q.id; $('ksH').textContent = K.press(q.name); $('ksl').classList.add('learning'); try { A.learn && A.learn(true); } catch(e){} }
+function stopLearn(){ if (learnId) { learnId = null; try { A.learn && A.learn(false); } catch(e){} $('ksH').textContent = K.hint; $('ksl').classList.remove('learning'); } }
+function closeKeys(){ stopLearn(); $('kso').classList.remove('open'); focusEl($('cKeys')); }
+window.onLearn = code => {                 // Android avisa qué botón se presionó
+  if (!learnId) return;
+  Object.keys(qkeys).forEach(k => { if (qkeys[k] === code) delete qkeys[k]; });
+  const id = learnId; qkeys[id] = code; learnId = null; saveKeys(); renderKeys();
+  $('ksH').textContent = K.hint; toast(K.saved);
+  focusEl($('ksl').children[QUICK.findIndex(q => q.id === id)]);
+};
+// en un navegador (sin Android) cualquier tecla sirve para probar
+addEventListener('keydown', e => {
+  if (learnId && !window.Android && !/^(Arrow|Enter|Escape|Backspace|GoBack|Browser)/.test(e.key)) { e.preventDefault(); e.stopImmediatePropagation(); window.onLearn(e.keyCode); }
+}, true);
+new MutationObserver(() => document.body.classList.toggle('panelopen', $('panel').classList.contains('open'))).observe($('panel'), {attributes:true, attributeFilter:['class']});
+new MutationObserver(() => document.body.classList.toggle('ksopen', $('kso').classList.contains('open'))).observe($('kso'), {attributes:true, attributeFilter:['class']});
+$('cKeys').onclick = openKeys;
+$('kso').onclick = e => { if (e.target === $('kso')) closeKeys(); };
+
 /* ---------- Menú al mantener presionado ---------- */
-let ctxPkg = null, moving = null;
+let ctxPkg = null, moving = null, ctxT = 0;
 function closeCtx(noFocus){ $('ctxo').classList.remove('open'); if (!noFocus) focusTile(ctxPkg); }
-$('ctxo').onclick = e => { if (e.target === $('ctxo')) closeCtx(); };
+$('ctxo').onclick = e => { if (Date.now() - ctxT > 450 && e.target === $('ctxo')) closeCtx(); };
 function openCtx(t){
   const pkg = ctxPkg = t.dataset.pkg, mini = t.classList.contains('mini'), nm = cfgName[pkg] || labels[pkg] || pkg, it = [];
   if (!mini) {
     it.push(['swap', T.cReplace, () => { closeCtx(true); openAll(pkg); }]);
     it.push(['move', T.cMove, () => { closeCtx(true); startMove(t); }]);
     it.push(['trash', T.cRemove, () => { const p = getPinned(), i = p.indexOf(pkg); if (i >= 0) p.splice(i, 1); savePinned(); closeCtx(true); buildDock(); toast(T.removed + ' · ' + nm); const ts = [...$('row').children]; focusEl(ts[Math.min(i, ts.length - 1)] || $('libbtn')); }, 'dn']);
-  } else it.push(['plus', T.cAdd, () => { getPinned().push(pkg); savePinned(); closeCtx(true); buildDock(); toast(T.added + ' · ' + nm); focusTile(pkg); }]);
+  } else {
+    it.push(['plus', T.cAdd, () => { getPinned().push(pkg); savePinned(); closeCtx(true); buildDock(); toast(T.added + ' · ' + nm); focusTile(pkg); }]);
+    it.push(['move', T.cMove, () => { closeCtx(true); startMove(t); }]);
+  }
   it.push(['info', T.cInfo, () => { closeCtx(true); if (A.appInfo) A.appInfo(pkg); else A.settings('appinfo:' + pkg); }]);
   it.push(['home', T.cDefault, () => { closeCtx(true); if (A.setDefaultLauncher) A.setDefaultLauncher(); else A.settings('home'); }, 'sep']);
   const l = $('ctxl'); l.innerHTML = '';
-  it.forEach(([ic, lb, fn, cls]) => { const b = document.createElement('button'); b.className = 'ctxi f ' + (cls || ''); b.innerHTML = '<span class="ci">' + svg(ic) + '</span><span>' + esc(lb) + '</span>'; b.onclick = fn; l.appendChild(b); });
+  it.forEach(([ic, lb, fn, cls]) => { const b = document.createElement('button'); b.className = 'ctxi f ' + (cls || ''); b.innerHTML = '<span class="ci">' + svg(ic) + '</span><span>' + esc(lb) + '</span>'; b.onclick = () => { if (Date.now() - ctxT > 450) fn(); }; l.appendChild(b); });
   const im = t.querySelector('img'); $('ctxI').style.display = im ? '' : 'none'; if (im) $('ctxI').src = im.src; $('ctxN').textContent = nm;
   const rem = parseFloat(getComputedStyle(document.documentElement).fontSize), r = t.getBoundingClientRect(), cx = r.left + r.width / 2, w = 30 * rem;
   const left = Math.max(2 * rem, Math.min(cx - w / 2, innerWidth - w - 2 * rem)), c = $('ctx');
   c.style.left = left + 'px'; c.style.bottom = (innerHeight - r.top + 1.2 * rem) + 'px'; c.style.setProperty('--ox', (cx - left) + 'px');
-  $('ctxo').classList.add('open'); focusEl(l.firstChild); liquidBlast(t, true);
+  ctxT = Date.now(); $('ctxo').classList.add('open'); focusEl(l.firstChild); liquidBlast(t, true);
 }
-function startMove(t){ moving = t; t.classList.add('moving'); focusEl(t); toast(T.moveHint); }
-function endMove(){ if (!moving) return; moving.classList.remove('moving'); moving = null; savePinned(); }
+function startMove(t){ moving = t; t.classList.add('moving'); focusEl(t); toast(T.moveHint, 5000); }
+function endMove(){ if (!moving) return; moving.classList.remove('moving'); moving = null; savePinned(); saveMore(); $('toast').classList.remove('on'); }
+function syncOrders(){
+  const o = [...$('row').children].map(x => x.dataset.pkg);
+  pinnedPk = o.concat(getPinned().filter(x => !o.includes(x) && !labels[x]));   // conserva solo las apps no instaladas
+  moreOrderPk = [...$('mrow').children].map(x => x.dataset.pkg);
+}
 function moveStep(dir){
-  const t = moving, row = $('row');
+  const t = moving, row = t.parentNode;
   if (dir < 0) { const p = t.previousElementSibling; if (!p) return; row.insertBefore(p, t.nextSibling); }
   else { const n = t.nextElementSibling; if (!n) return; row.insertBefore(n, t); }
-  const o = [...row.children].map(x => x.dataset.pkg); pinnedPk = o.concat(getPinned().filter(x => !o.includes(x)));
+  syncOrders();
   t.scrollIntoView({inline:'center', block:'nearest', behavior:'smooth'}); moveLens(t);
+}
+function moveRow(toMini){
+  const t = moving; if (!t || !CONFIG.showMore) return;
+  if (t.classList.contains('mini') === toMini) return;
+  const to = toMini ? $('mrow') : $('row'), r = t.getBoundingClientRect(), cx = r.left + r.width / 2;
+  t.classList.toggle('mini', toMini);
+  const ref = [...to.children].find(x => { const q = x.getBoundingClientRect(); return q.left + q.width / 2 > cx; });
+  to.insertBefore(t, ref || null);
+  $('mnone').classList.toggle('hide', $('mrow').children.length > 0);
+  syncOrders(); focusEl(t);
+  t.scrollIntoView({inline:'center', block:'nearest', behavior:'smooth'});
+  toast((toMini ? T.toMore : T.toMain) + ' · ' + (cfgName[t.dataset.pkg] || labels[t.dataset.pkg]));
 }
 
 /* ---------- Panel ---------- */
@@ -731,6 +949,7 @@ function pollMedia(){
     $('pos').textContent = mmss(m.pos);
     $('fill').style.width = (m.dur > 0 ? Math.min(100, m.pos / m.dur * 100) : 0) + '%';
     $('pArt').style.visibility = 'visible';
+    if ($('plo').classList.contains('open')) updatePlayer(m);
   } else {
     $('pTitle').textContent = m.access ? T.nothing : T.enableMedia;
     $('pSub').textContent = '';
@@ -740,7 +959,36 @@ function pollMedia(){
 setInterval(pollMedia, 1000);
 $('pmedia').onclick = () => { const m = J(A.media()); if (m && !m.access) A.settings('notif'); else A.mediaCmd('toggle'); setTimeout(pollMedia, 300); };
 document.querySelectorAll('[data-cmd]').forEach(b => b.onclick = () => { A.mediaCmd(b.dataset.cmd); setTimeout(pollMedia, 300); });
-$('bListen').onclick = () => { const m = J(A.media()); A.launch(m && m.pkg ? m.pkg : CONFIG.musicApp); };
+/* ---------- Reproductor en cristal líquido ---------- */
+let plKey = '', plPkg = '';
+function updatePlayer(m){
+  $('plTtl').textContent = m.title; $('plArtist').textContent = m.artist;
+  $('plPos').textContent = mmss(m.pos); $('plDur').textContent = m.dur > 0 ? mmss(m.dur) : '';
+  $('plFill').style.width = (m.dur > 0 ? Math.min(100, m.pos / m.dur * 100) : 0) + '%';
+  $('plPP').innerHTML = svg(m.playing ? 'pause' : 'play');
+  plPkg = m.pkg || CONFIG.musicApp;
+  $('plOpenL').textContent = T.openApp((typeof labels !== 'undefined' && labels[plPkg]) || '');
+  if (m.artKey !== plKey) {
+    plKey = m.artKey;
+    const a = $('art').getAttribute('src') || ''; $('plArt').src = a; $('plBg').src = a;
+    loadQueue();
+  }
+}
+function loadQueue(){
+  let q = []; try { q = A.mediaQueue ? (J(A.mediaQueue()) || []) : []; } catch(e){}
+  const box = $('plQ'); $('plQh').textContent = T.upNext;
+  $('plQl').innerHTML = q.slice(0, 5).map((it, i) => '<div class="qi"><b>' + (i + 1) + '</b><span>' + esc(it.title) + '</span><small>' + esc(it.artist || '') + '</small></div>').join('');
+  box.classList.toggle('hide', !q.length);
+}
+function openPlayer(){
+  const m = J(A.media()); if (!m || !m.active) return;
+  plKey = ''; updatePlayer(m);
+  $('plo').classList.add('open'); focusEl($('plPPb'));
+}
+function closePlayer(noFocus){ $('plo').classList.remove('open'); if (!noFocus) focusEl($('bListen')); }
+$('bListen').onclick = openPlayer;
+$('plOpen').onclick = () => { closePlayer(true); A.launch(plPkg || CONFIG.musicApp); };
+$('plo').onclick = e => { if (e.target === $('plo')) closePlayer(); };
 
 /* ---------- Botones ---------- */
 $('bStore').onclick = () => A.launch(CONFIG.storeApp);
@@ -762,11 +1010,13 @@ $('big').onclick = () => $('big').classList.remove('open');
    ===================================================================== */
 const visible = el => el.getClientRects().length > 0;
 function scope(){
+  if ($('plo').classList.contains('open')) return [...$('pl').querySelectorAll('.f')];
+  if ($('kso').classList.contains('open')) return [...$('ksl').querySelectorAll('.f')];
   if ($('ctxo').classList.contains('open')) return [...$('ctx').querySelectorAll('.f')];
   if ($('wxo').classList.contains('open')) return [...$('wxdays').querySelectorAll('.f')];
   if ($('all').classList.contains('open')) return [...$('all').querySelectorAll('.f')];
   if ($('panel').classList.contains('open')) return [...$('panel').querySelectorAll('.f')].concat([$('bPanel')]);
-  return [...document.querySelectorAll('.f')].filter(e => !e.closest('#panel') && !e.closest('#all') && !e.closest('#wxo') && !e.closest('#ctxo') && visible(e));
+  return [...document.querySelectorAll('.f')].filter(e => !e.closest('#panel') && !e.closest('#all') && !e.closest('#wxo') && !e.closest('#plo') && !e.closest('#ctxo') && !e.closest('#kso') && visible(e));
 }
 function focusEl(el){
   if (!el) return;
@@ -794,6 +1044,8 @@ function move(dir){
   if (best) focusEl(best);
 }
 function back(){
+  if ($('plo').classList.contains('open')) return closePlayer();
+  if ($('kso').classList.contains('open')) return learnId ? (stopLearn(), renderKeys(), focusEl($('ksl').firstChild)) : closeKeys();
   if ($('ctxo').classList.contains('open')) return closeCtx();
   if ($('wxo').classList.contains('open')) return closeWx();
   if ($('big').classList.contains('open')) return $('big').classList.remove('open');
@@ -802,7 +1054,7 @@ function back(){
   focusHome();
 }
 window.onBack = back;
-window.onHome = () => { exitSaver(); endMove(); closeCtx(true); $('wxo').classList.remove('open'); $('big').classList.remove('open'); closeAll(); $('panel').classList.remove('open'); focusHome(); };
+window.onHome = () => { closePlayer(true); stopLearn(); $('kso').classList.remove('open'); exitSaver(); endMove(); closeCtx(true); $('wxo').classList.remove('open'); $('big').classList.remove('open'); closeAll(); $('panel').classList.remove('open'); focusHome(); };
 
 addEventListener('keydown', e => {
   if ($('big').classList.contains('open')) { e.preventDefault(); $('big').classList.remove('open'); return; }
@@ -841,7 +1093,8 @@ addEventListener('keydown', e => {
   if (moving) {
     const k = e.key;
     if (k === 'ArrowLeft' || k === 'ArrowRight') { e.preventDefault(); e.stopImmediatePropagation(); moveStep(k === 'ArrowLeft' ? -1 : 1); }
-    else if (isOK(e) || k.startsWith('Arrow') || k === 'Escape' || k === 'GoBack' || k === 'BrowserBack' || k === 'Backspace') { e.preventDefault(); e.stopImmediatePropagation(); endMove(); }
+    else if (k === 'ArrowUp' || k === 'ArrowDown') { e.preventDefault(); e.stopImmediatePropagation(); moveRow(k === 'ArrowDown'); }
+    else if (isOK(e) || k === 'Escape' || k === 'GoBack' || k === 'BrowserBack' || k === 'Backspace') { e.preventDefault(); e.stopImmediatePropagation(); endMove(); }
     return;
   }
   if (!isOK(e)) return;
@@ -960,6 +1213,7 @@ document.addEventListener('focusout', e => { if (!e.relatedTarget) { glowOff(); 
 /* ---------- Inicio ---------- */
 paintIcons();
 buildDock(); refreshInfo(); pollMedia();
+try { if (!Object.keys(qkeys).length && !localStorage.getItem('keysHint')) { localStorage.setItem('keysHint', '1'); setTimeout(() => toast(K.firstRun, 7000), 2500); } } catch(e){}
 focusHome();
 </script>
 </body>
