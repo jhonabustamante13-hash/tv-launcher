@@ -24,12 +24,12 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-l
 .hide{display:none!important}
 
 /* ---------- Fondo ---------- */
-#wall{position:fixed;inset:0;overflow:hidden;transition:opacity .4s}
-#wall>*{position:absolute;inset:0}
+#wall{position:fixed;top:0;right:0;bottom:0;left:0;overflow:hidden;transition:opacity .4s}
+#wall>*{position:absolute;top:0;right:0;bottom:0;left:0}
 #stars,#scene,#drive,#aurora,#pic{display:none}
 #pic{background-size:cover;background-position:center;background-repeat:no-repeat}
 .wp-pic #pic{display:block}
-.wp-pic #pic::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.22),rgba(0,0,0,.38))}
+.wp-pic #pic::after{content:"";position:absolute;top:0;right:0;bottom:0;left:0;background:linear-gradient(180deg,rgba(0,0,0,.22),rgba(0,0,0,.38))}
 .wp-pic{background:#000}
 .wp-pic #glow.on,.wp-pic #glow2.on{opacity:.5}
 .wp-drive #drive{display:block}
@@ -46,7 +46,7 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-l
 #glow.on,#glow2.on{opacity:1}
 #glow.flash,#glow2.flash{animation:flash .9s ease-out}
 @keyframes flash{0%{filter:brightness(1.7) saturate(1.3)}35%{filter:brightness(1.25)}100%{filter:none}}
-#shade{position:fixed;inset:0;pointer-events:none;
+#shade{position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;
   background:linear-gradient(180deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,0) 22%,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%)}
 /* synthwave */
 #drive .sun{position:absolute;left:50%;top:34%;width:20rem;height:20rem;margin-left:-10rem;border-radius:50%;
@@ -95,7 +95,7 @@ svg{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.8;stroke-l
 #clock:focus .ct{text-shadow:none}
 
 /* ---------- Tarjeta del clima (al presionar la fecha/hora) ---------- */
-#wxo{position:fixed;inset:0;z-index:12;background:rgba(0,0,0,.38);-webkit-backdrop-filter:blur(.5rem);backdrop-filter:blur(.5rem);
+#wxo{position:fixed;top:0;right:0;bottom:0;left:0;z-index:12;background:rgba(0,0,0,.38);-webkit-backdrop-filter:blur(.5rem);backdrop-filter:blur(.5rem);
   display:flex;align-items:center;justify-content:center;visibility:hidden;opacity:0;transition:opacity .25s,visibility 0s .25s}
 #wxo.open{visibility:visible;opacity:1;transition:opacity .25s}
 #wxcard{width:62rem;padding:3rem 3.4rem 2.6rem;border-radius:3.2rem;color:#fff;text-shadow:0 .1rem .6rem rgba(0,0,0,.3);
@@ -146,7 +146,7 @@ body.apptitle #np{opacity:0;pointer-events:none}
 .listen:focus{box-shadow:0 0 1.4rem rgba(255,255,255,.4)}
 
 /* ---------- Reproductor (cristal líquido) ---------- */
-#plo{position:fixed;inset:0;z-index:14;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(.6rem);backdrop-filter:blur(.6rem);
+#plo{position:fixed;top:0;right:0;bottom:0;left:0;z-index:14;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(.6rem);backdrop-filter:blur(.6rem);
   visibility:hidden;opacity:0;transition:opacity .25s,visibility 0s .25s}
 #plo.open{visibility:visible;opacity:1;transition:opacity .25s}
 #pl{position:relative;isolation:isolate;overflow:hidden;width:70rem;padding:3rem 3.2rem 2.6rem;border-radius:3.4rem;color:#fff;text-shadow:0 .1rem .6rem rgba(0,0,0,.35);
@@ -194,7 +194,7 @@ body.apptitle #np{opacity:0;pointer-events:none}
   background:rgba(20,24,40,.85);border:.08rem solid var(--line);display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:.4rem;transition:width .22s,height .22s,transform .22s}
 .tile img{display:block}
-.tile.banner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tile.banner img{position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%;object-fit:cover}
 .tile.icon img{width:2.8rem;height:2.8rem;border-radius:.6rem}
 .tile .tl{font-size:.95rem;font-weight:500;padding:0 .6rem;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .tile.banner .tl{display:none}
@@ -222,7 +222,7 @@ body.apptitle #apptitle{opacity:1}
 /* fila de las demás apps + botón de biblioteca */
 #more{position:fixed;left:5rem;right:5rem;bottom:5.6rem;height:calc(4.2rem + var(--lift));border-radius:2rem;overflow:hidden;z-index:4;transition:height .3s;
   background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.04));border:.08rem solid var(--line)}
-#mnone{position:absolute;inset:0;display:flex;align-items:flex-start;padding-top:1.4rem;justify-content:center;font-size:1.25rem;color:var(--dim)}
+#mnone{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;align-items:flex-start;padding-top:1.4rem;justify-content:center;font-size:1.25rem;color:var(--dim)}
 #mrow{display:flex;align-items:flex-start;gap:1.7rem;height:100%;padding:1rem 1.8rem 0;width:max-content}
 .tile.mini{width:9rem;height:5.2rem;border-radius:1rem;gap:.2rem}
 .tile.mini.icon img{width:2.7rem;height:2.7rem;border-radius:.6rem}
@@ -253,11 +253,8 @@ body.apptitle #apptitle{opacity:1}
 #ram{margin:1.2rem 0 0;padding:.7rem 1.4rem;border-radius:1.4rem;background:rgba(40,46,64,.78);border:.08rem solid var(--line);font-size:1.05rem;color:var(--dim);text-align:right}
 
 /* ---------- Todas las apps ---------- */
-#all{position:fixed;inset:0;z-index:9;background:rgba(5,8,16,.9);padding:6rem 5rem 3rem;visibility:hidden;opacity:0;transition:opacity .2s,visibility 0s .2s}
+#all{position:fixed;top:0;right:0;bottom:0;left:0;z-index:9;background:rgba(5,8,16,.9);padding:6rem 5rem 3rem;visibility:hidden;opacity:0;transition:opacity .2s,visibility 0s .2s}
 #all.open{visibility:visible;opacity:1;transition:opacity .2s}
 #all h2{font-size:2rem;font-weight:600;margin-bottom:2rem}
 #allH{font-size:1.25rem;color:var(--dim);margin:-1.2rem 0 1.8rem}
-#apps{display:grid;grid-template-columns:repeat(8,1fr);gap:1.6rem;max-height:calc(100vh - 21rem);overflow-y:auto;overflow-x:hidden;padding:.5rem;margin:-.5rem;scrollbar-width:none}
-#apps::-webkit-scrollbar{display:none}
-.app{position:relative}
-.app .pin{position:absolu
+#apps{display:grid;grid-template-columns:repeat(8,1fr);gap:1.6rem;max-h
