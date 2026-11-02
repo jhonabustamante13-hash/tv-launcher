@@ -175,6 +175,7 @@ jobs:
           import android.os.SystemClock
           import android.provider.Settings
           import android.util.Base64
+          import android.view.KeyEvent
           import android.webkit.JavascriptInterface
           import android.webkit.WebChromeClient
           import android.webkit.WebView
@@ -221,7 +222,54 @@ jobs:
                   web.evaluateJavascript("window.onBack&&window.onBack()", null)
               }
 
+                  // ---------- botones del control remoto (YouTube, Netflix, Prime, Disney+) ----------
+
+              @Volatile private var keyMap: Map<Int, String> = HashMap()
+              @Volatile private var learning = false
+              private var swallowUp = -1
+
+              private fun launchPkg(pkg: String): Boolean {
+                  val pm = packageManager
+                  val i = pm.getLeanbackLaunchIntentForPackage(pkg) ?: pm.getLaunchIntentForPackage(pkg) ?: return false
+                  startSafe(i)
+                  return true
+              }
+
+              private fun isNavKey(c: Int): Boolean = when (c) {
+                  KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT,
+                  KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER,
+                  KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_ESCAPE, KeyEvent.KEYCODE_HOME, KeyEvent.KEYCODE_MENU,
+                  KeyEvent.KEYCODE_POWER, KeyEvent.KEYCODE_TV_POWER,
+                  KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_MUTE -> true
+                  else -> false
+              }
+
+              override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+                  // algunos botones llegan como "desconocidos": se identifican por su scanCode
+                  val code = if (event.keyCode == KeyEvent.KEYCODE_UNKNOWN) 100000 + event.scanCode else event.keyCode
+                  if (event.action == KeyEvent.ACTION_UP && code == swallowUp) {
+                      swallowUp = -1
+                      return true
+                  }
+                  if (event.action == KeyEvent.ACTION_DOWN && !isNavKey(code)) {
+                      if (learning) {
+                          learning = false
+                          swallowUp = code
+                          web.post { web.evaluateJavascript("window.onLearn&&window.onLearn(" + code + ")", null) }
+                          return true
+                      }
+                      val pkg = keyMap[code]
+                      if (pkg != null) {
+                          swallowUp = code
+                          if (event.repeatCount == 0) launchPkg(pkg)
+                          return true
+                      }
+                  }
+                  return super.dispatchKeyEvent(event)
+              }
+
               // ---------- ayudas ----------
+
 
               private fun hasNotifAccess(): Boolean {
                   val s = Settings.Secure.getString(contentResolver, "enabled_notification_listeners") ?: return false
@@ -373,6 +421,26 @@ jobs:
                               startSafe(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME))
                           }
                       }
+                  }
+
+                          @JavascriptInterface
+                  fun setKeys(json: String) {
+                      try {
+                          val o = JSONObject(json)
+                          val m = HashMap<Int, String>()
+                          val ks = o.keys()
+                          while (ks.hasNext()) {
+                              val k = ks.next()
+                              m[k.toInt()] = o.getString(k)
+                          }
+                          keyMap = m
+                      } catch (e: Exception) {
+                      }
+                  }
+
+                  @JavascriptInterface
+                  fun learn(on: Boolean) {
+                      learning = on
                   }
 
                   @JavascriptInterface
